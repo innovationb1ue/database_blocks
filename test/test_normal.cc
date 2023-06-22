@@ -2,7 +2,7 @@
 // Created by 钟卓凡 on 22/06/2023.
 //
 #include <gtest/gtest.h>
-#include "../library.h"
+#include "../mem_tree_impl.h"
 #include "string"
 
 TEST(BasicTest, BasicAssertions){

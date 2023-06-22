@@ -1,12 +1,10 @@
-#ifndef DATABASE_BLOCKS_LIBRARY_H
-#define DATABASE_BLOCKS_LIBRARY_H
+#ifndef DATABASE_BLOCKS_MEM_TREE_IMPL_H
+#define DATABASE_BLOCKS_MEM_TREE_IMPL_H
 
 #include<map>
-void hello();
-
-typedef std::shared_ptr<std::map<std::string, std::string>> store_type;
 
 namespace database_blocks{
+    typedef std::shared_ptr<std::map<std::string, std::string>> store_type;
     class mem_tree{
     public:
         mem_tree();
@@ -32,4 +30,4 @@ namespace database_blocks{
     };
 }
 
-#endif //DATABASE_BLOCKS_LIBRARY_H
+#endif //DATABASE_BLOCKS_MEM_TREE_IMPL_H

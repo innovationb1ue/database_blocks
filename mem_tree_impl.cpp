@@ -1,4 +1,4 @@
-#include "library.h"
+#include "mem_tree_impl.h"
 
 #include <iostream>
 #include <fstream>
@@ -55,7 +55,7 @@ bool database_blocks::mem_tree::merge(const database_blocks::mem_tree &&other) {
     return true;
 }
 
-store_type database_blocks::mem_tree::get_store() const {
+database_blocks::store_type database_blocks::mem_tree::get_store() const {
     return _store;
 }
 
