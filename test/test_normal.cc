@@ -2,8 +2,10 @@
 // Created by 钟卓凡 on 22/06/2023.
 //
 #include <gtest/gtest.h>
-#include "../mem_tree_impl.h"
-#include "string"
+#include "mem_tree_impl.h"
+#include <string>
+#include <sstream>
+#include <iostream>
 
 TEST(BasicTest, BasicAssertions){
     auto db = database_blocks::mem_tree();
@@ -50,4 +52,31 @@ TEST(BasicLoadTest, LoadAssertion){
 
     std::string k3 = "8";
     ASSERT_EQ(db.get(k3), "8");
+}
+
+TEST(BasicLoadTest, Int64Assertion){
+    auto db = database_blocks::mem_tree();
+    int k = 0;
+    auto k1 = std::to_string(k);
+
+    std::vector<int64_t> nums = {123456789, 987654321};
+    std::ostringstream oss;
+    for (auto num : nums) {
+        oss << num << " ";
+    }
+    std::string str = oss.str();
+    db.put(k1, str);
+    db.flush();
+    std::string new_key = "0";
+    auto val = db.get(new_key);
+    assert(val.has_value());
+    std::istringstream iss(val.value());
+    std::vector<int64_t> nums2;
+    int64_t num2;
+    while (iss >> num2) {
+        nums2.push_back(num2);
+    }
+    for (auto num : nums2) {
+        std::cout << "Deserialized number: " << num << std::endl;
+    }
 }

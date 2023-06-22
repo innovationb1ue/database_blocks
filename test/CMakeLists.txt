@@ -16,7 +16,14 @@ target_link_libraries(
         hello_test
         GTest::gtest_main
         # this source dir is project root dir.
-        "${CMAKE_SOURCE_DIR}/build/libdatabase_blocks.a"
+#        "${CMAKE_SOURCE_DIR}/build/libdatabase_blocks.a"
+        database_blocks
+)
+
+target_include_directories(
+        hello_test
+        PRIVATE
+        ${CMAKE_SOURCE_DIR}
 )
 
 include(GoogleTest)
