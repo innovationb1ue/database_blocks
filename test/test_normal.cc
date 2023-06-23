@@ -98,3 +98,31 @@ TEST(BasicLoadTest, WriteIntIntoValAssertion) {
     ptr ++;
     ASSERT_EQ(996, *ptr);
 }
+
+
+
+TEST(BasicLoadTest, CompareBytes) {
+    auto db = database_blocks::mem_tree();
+
+    std::string k1;
+    k1.resize(4);
+    int k = 123;
+    memcpy(k1.data(), reinterpret_cast<const char *>(&k), sizeof k);
+
+    auto v = 64;
+    std::string v1;
+    v1.reserve(sizeof v * 2);
+    memcpy(v1.data(), reinterpret_cast<const char *>(&v), sizeof v);
+
+    auto v2_i = 456;
+    std::string v2;
+    v2.reserve(sizeof v2_i * 2);
+    memcpy(v2.data(), reinterpret_cast<const char *>(&v2_i), sizeof v2_i);
+
+    db.put(k1, v1);
+    db.put(k1, v2);
+    auto res = db.get(k1);
+    auto ptr = reinterpret_cast<int*>(res->data());
+    ASSERT_EQ(v2_i, *ptr);
+
+}
