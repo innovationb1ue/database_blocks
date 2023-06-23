@@ -80,3 +80,21 @@ TEST(BasicLoadTest, Int64Assertion){
         std::cout << "Deserialized number: " << num << std::endl;
     }
 }
+
+TEST(BasicLoadTest, WriteIntIntoValAssertion) {
+    auto db = database_blocks::mem_tree();
+    int k = 0;
+    auto k1 = std::to_string(k);
+    auto v = 64;
+    auto v2 = 996;
+    std::string v1;
+    v1.reserve(sizeof v * 2);
+    memcpy(v1.data(), reinterpret_cast<const char *>(&v), sizeof v);
+    memcpy(v1.data() + sizeof v, reinterpret_cast<const char *>(&v2), sizeof v);
+    db.put(k1, v1);
+    auto res = db.get(k1);
+    auto ptr = reinterpret_cast<int*>(res->data());
+    ASSERT_EQ(64, *ptr);
+    ptr ++;
+    ASSERT_EQ(996, *ptr);
+}

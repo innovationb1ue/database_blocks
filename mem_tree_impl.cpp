@@ -36,7 +36,7 @@ bool database_blocks::mem_tree::put(std::string &key, std::string &val) {
     if (immutable) {
         return false;
     }
-    auto res = _store->insert_or_assign(std::move(key), std::move(val));
+    auto res = _store->insert_or_assign(key, val);
     // set immutable if maximum size is reached
     if (_store->size() > max_size) {
         this->set_immutable();
