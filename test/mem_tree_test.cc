@@ -6,23 +6,34 @@
 #include <string>
 #include <sstream>
 #include <iostream>
+#include "config.h"
 
-TEST(BasicTest, BasicAssertions){
-    auto db = database_blocks::mem_tree();
+class BasicTest : public ::testing::Test {
+protected:
+    void SetUp() override {
+        auto default_config = database_blocks::configs::default_config();
+    }
+
+    database_blocks::mem_tree tree{database_blocks::configs::default_config()};
+};
+
+
+TEST_F(BasicTest, BasicAssertions) {
+    auto config = database_blocks::configs::default_config();
     int k = 0;
     int v = 0;
-    while (!db.is_immutable()){
+    while (!tree.is_immutable()) {
         auto k1 = std::to_string(k);
         auto v1 = std::to_string(v);
-        db.put(k1, v1);
+        tree.put(k1, v1);
         k++;
         v++;
     }
-    db.flush();
-    ASSERT_EQ(db.is_immutable(), true);
+    tree.flush(config.db_store_path / "db.txt");
+    ASSERT_EQ(tree.is_immutable(), true);
 }
 
-TEST(BasicTest, DeleteElementAssertion){
+TEST_F(BasicTest, DeleteElementAssertion) {
     auto db = database_blocks::mem_tree();
     std::string k = "123456";
     std::string v = "456";
@@ -32,18 +43,17 @@ TEST(BasicTest, DeleteElementAssertion){
 }
 
 
-TEST(BasicLoadTest, LoadAssertion){
-    auto db = database_blocks::mem_tree();
+TEST_F(BasicTest, LoadAssertion) {
     int k = 0;
     int v = 0;
-    while (!db.is_immutable() && k < 1000){
+    while (!tree.is_immutable() && k < 1000) {
         auto k1 = std::to_string(k);
         auto v1 = std::to_string(v);
-        db.put(k1, v1);
+        tree.put(k1, v1);
         k++;
         v++;
     }
-    db.flush();
+    tree.flush(tree.config.db_store_path / "db.txt");
 
     auto db2 = database_blocks::mem_tree();
     db2.load();
@@ -51,24 +61,23 @@ TEST(BasicLoadTest, LoadAssertion){
     ASSERT_EQ(db2.get(k2), "5");
 
     std::string k3 = "8";
-    ASSERT_EQ(db.get(k3), "8");
+    ASSERT_EQ(tree.get(k3), "8");
 }
 
-TEST(BasicLoadTest, Int64Assertion){
-    auto db = database_blocks::mem_tree();
+TEST_F(BasicTest, Int64Assertion) {
     int k = 0;
     auto k1 = std::to_string(k);
 
     std::vector<int64_t> nums = {123456789, 987654321};
     std::ostringstream oss;
-    for (auto num : nums) {
+    for (auto num: nums) {
         oss << num << " ";
     }
     std::string str = oss.str();
-    db.put(k1, str);
-    db.flush();
+    tree.put(k1, str);
+    tree.flush(tree.config.db_store_path / "db.txt");
     std::string new_key = "0";
-    auto val = db.get(new_key);
+    auto val = tree.get(new_key);
     assert(val.has_value());
     std::istringstream iss(val.value());
     std::vector<int64_t> nums2;
@@ -76,7 +85,7 @@ TEST(BasicLoadTest, Int64Assertion){
     while (iss >> num2) {
         nums2.push_back(num2);
     }
-    for (auto num : nums2) {
+    for (auto num: nums2) {
         std::cout << "Deserialized number: " << num << std::endl;
     }
 }
@@ -93,12 +102,11 @@ TEST(BasicLoadTest, WriteIntIntoValAssertion) {
     memcpy(v1.data() + sizeof v, reinterpret_cast<const char *>(&v2), sizeof v);
     db.put(k1, v1);
     auto res = db.get(k1);
-    auto ptr = reinterpret_cast<int*>(res->data());
+    auto ptr = reinterpret_cast<int *>(res->data());
     ASSERT_EQ(64, *ptr);
-    ptr ++;
+    ptr++;
     ASSERT_EQ(996, *ptr);
 }
-
 
 
 TEST(BasicLoadTest, CompareBytes) {
@@ -122,7 +130,7 @@ TEST(BasicLoadTest, CompareBytes) {
     db.put(k1, v1);
     db.put(k1, v2);
     auto res = db.get(k1);
-    auto ptr = reinterpret_cast<int*>(res->data());
+    auto ptr = reinterpret_cast<int *>(res->data());
     ASSERT_EQ(v2_i, *ptr);
 
 }

@@ -13,9 +13,15 @@ namespace database_blocks {
 
         mem_tree(database_blocks::configs &config);
 
-        void flush();
+        mem_tree(database_blocks::configs &&config);
 
+        // flush to disk.
+        void flush(std::filesystem::path);
+
+        // put a k-v pair into the tree
         bool put(std::string &key, std::string &val);
+
+        void clear();
 
         bool remove(std::string &key);
 
@@ -29,18 +35,23 @@ namespace database_blocks {
 
         [[nodiscard]] store_type get_store() const;
 
-        size_t size() {
-            return _store->size();
-        }
-
         std::optional<std::string> get(std::string &key);
 
         void load();
 
+    public:
+        // global config.
+        configs config;
+
     private:
+        // storage
         store_type _store;
-        size_t max_size;
+        // storage size in bytes
+        size_t size = 0;
+        // maximum storage size in byte.
         bool immutable;
+        // path for record file.
+        std::string path;
     };
 }
 

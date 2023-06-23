@@ -10,23 +10,27 @@ namespace database_blocks {
     database_blocks::mem_tree::mem_tree() {
         configs config = configs::default_config();
         this->_store = std::make_shared<std::map<std::string, std::string>>();
-        this->max_size = config.mem_tree_size;
         this->immutable = false;
     }
 
-    database_blocks::mem_tree::mem_tree(configs& config) {
+    database_blocks::mem_tree::mem_tree(configs& config): config(config){
         this->_store = std::make_shared<std::map<std::string, std::string>>();
-        this->max_size = config.mem_tree_size;
         this->immutable = false;
     }
 
-    void database_blocks::mem_tree::flush() {
+    database_blocks::mem_tree::mem_tree(configs&& config): config(std::move(config)){
+        this->_store = std::make_shared<std::map<std::string, std::string>>();
+        this->immutable = false;
+    }
+
+
+
+    void database_blocks::mem_tree::flush(std::filesystem::path path) {
         if (!immutable) {
             set_immutable();
         }
         std::ofstream file;
-        // todo: make the file path a parameter.
-        file.open("db.txt", std::ios::binary);
+        file.open(path, std::ios::binary);
         auto it = _store->begin();
         while (it != _store->end()) {
             auto key_size = it->first.size();
@@ -48,7 +52,8 @@ namespace database_blocks {
         }
         auto res = _store->insert_or_assign(key, val);
         // set immutable if maximum size is reached
-        if (_store->size() > max_size) {
+        size += (key.size() + val.size());
+        if (size > config.mem_tree_size) {
             this->set_immutable();
         }
         return res.second;
@@ -105,5 +110,9 @@ namespace database_blocks {
             myfile.read(val.data(), value_size);
             this->_store->emplace(std::move(key), std::move(val));
         }
+    }
+
+    void mem_tree::clear() {
+        this->_store->clear();
     }
 }

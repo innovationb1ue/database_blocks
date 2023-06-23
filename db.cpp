@@ -3,3 +3,9 @@
 //
 
 #include "db.h"
+
+#include <utility>
+
+database_blocks::db::db(database_blocks::configs config): config(std::move(config)) {
+
+}

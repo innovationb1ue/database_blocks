@@ -8,10 +8,15 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
 enable_testing()
+
+# test executables
 add_executable(
         hello_test
-        test_normal.cc
+        mem_tree_test.cc
+        db_test.cpp
 )
+
+# link for libs
 target_link_libraries(
         hello_test
         GTest::gtest_main
@@ -25,6 +30,9 @@ target_include_directories(
         PRIVATE
         ${CMAKE_SOURCE_DIR}
 )
+
+
+
 
 include(GoogleTest)
 gtest_discover_tests(hello_test)

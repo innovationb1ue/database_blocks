@@ -6,19 +6,23 @@
 #define DATABASE_BLOCKS_DB_H
 
 #include "config.h"
+#include "mem_tree_impl.h"
+#include <vector>
 
-namespace database_blocks{
+namespace database_blocks {
     class db {
     public:
-        db(){
+        db(configs config);
 
-        }
+        ~db() = default;
 
     private:
-        configs a ;
+        // config struct
+        configs config;
+        // more mem_tree means more possible memory occupation and better performance.
+        std::vector<mem_tree> mem_trees;
     };
 }
-
 
 
 #endif //DATABASE_BLOCKS_DB_H
