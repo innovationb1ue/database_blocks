@@ -15,16 +15,21 @@ void database_blocks::mem_tree::flush() {
     if (!immutable) {
         set_immutable();
     }
-    std::ofstream myfile;
+    std::ofstream file;
     // todo: make the file path a parameter.
-    myfile.open("db.txt");
+    file.open("db.txt", std::ios::binary);
     auto it = _store->begin();
     while (it != _store->end()) {
-        myfile << it->first << separator << it->second << "\n";
+        auto key_size = it->first.size();
+        auto val_size = it->second.size();
+        file.write(reinterpret_cast<const char*>(&key_size), sizeof(key_size));
+        file.write(reinterpret_cast<const char*>(&val_size), sizeof(val_size));
+        file.write(it->first.data(), it->first.size());
+        file.write(it->second.data(), it->second.size());
+
         it++;
     }
-    myfile.close();
-    return;
+    file.flush();
 }
 
 bool database_blocks::mem_tree::put(std::string &key, std::string &val) {
@@ -70,12 +75,24 @@ std::optional<std::string> database_blocks::mem_tree::get(std::string &key) {
 void database_blocks::mem_tree::load() {
     std::ifstream myfile;
     // todo: make the file path a parameter.
-    myfile.open("db.txt");
-    std::string line;
-    while (std::getline(myfile, line)) {
-        auto split_pos = line.find(';');
-        auto key = std::string_view(line.data(), split_pos);
-        auto val = std::string_view(line.data() + split_pos + 1, line.size() - split_pos - 1);
-        this->_store->emplace(key, val);
+    myfile.open("db.txt", std::ios::binary);
+    myfile.seekg(0, std::ios::beg);
+    const auto start = myfile.tellg();
+    myfile.seekg(0, std::ios::end);
+    const auto end = myfile.tellg();
+    const auto file_size = end - start;
+
+    myfile.seekg(0, std::ios::beg);
+    while (!myfile.eof()){
+        size_t key_size;
+        myfile.read(reinterpret_cast<char*>(&key_size), sizeof(key_size));
+        size_t value_size;
+        myfile.read(reinterpret_cast<char*>(&value_size), sizeof(value_size));
+        std::string key, val;
+        key.resize(key_size);
+        myfile.read(key.data(), key_size);
+        val.resize(value_size);
+        myfile.read(val.data(), value_size);
+        this->_store->emplace(std::move(key), std::move(val));
     }
 }

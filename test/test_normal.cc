@@ -36,7 +36,7 @@ TEST(BasicLoadTest, LoadAssertion){
     auto db = database_blocks::mem_tree();
     int k = 0;
     int v = 0;
-    while (!db.is_immutable()){
+    while (!db.is_immutable() && k < 1000){
         auto k1 = std::to_string(k);
         auto v1 = std::to_string(v);
         db.put(k1, v1);
