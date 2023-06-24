@@ -24,7 +24,7 @@ namespace database_blocks {
         // mem tree size in memory.
         int64_t mem_tree_size;
         // path to store db files. this should point to a directory where we can freely use.
-        const std::filesystem::path db_store_path;
+        std::filesystem::path db_store_path;
     };
 
 }

@@ -8,7 +8,7 @@
 namespace database_blocks {
 
     database_blocks::mem_tree::mem_tree() {
-        configs config = configs::default_config();
+        configs default_config = configs::default_config();
         this->_store = std::make_shared<std::map<std::string, std::string>>();
         this->immutable = false;
     }
@@ -23,14 +23,12 @@ namespace database_blocks {
         this->immutable = false;
     }
 
-
-
-    void database_blocks::mem_tree::flush(std::filesystem::path path) {
+    void database_blocks::mem_tree::flush(std::filesystem::path dst) {
         if (!immutable) {
             set_immutable();
         }
         std::ofstream file;
-        file.open(path, std::ios::binary);
+        file.open(dst, std::ios::binary);
         auto it = _store->begin();
         while (it != _store->end()) {
             auto key_size = it->first.size();
