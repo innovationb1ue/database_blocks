@@ -5,7 +5,7 @@
 #include "config.h"
 
 namespace database_blocks {
-    typedef std::shared_ptr<std::map<std::string, std::string>> store_type;
+    typedef std::map<std::string, std::string> store_type;
 
     class mem_tree {
     public:
@@ -16,7 +16,7 @@ namespace database_blocks {
         mem_tree(database_blocks::configs &&config);
 
         // flush to disk.
-        void flush(std::filesystem::path);
+        void flush(const std::filesystem::path&);
 
         // put a k-v pair into the tree
         bool put(std::string &key, std::string &val);
@@ -37,7 +37,11 @@ namespace database_blocks {
 
         std::optional<std::string> get(std::string &key);
 
+        // default load. intentionally for tests.
         void load();
+
+        // load from file.
+        void load(const std::filesystem::path&);
 
     public:
         // global config.
