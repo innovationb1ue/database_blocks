@@ -25,6 +25,7 @@ namespace database_blocks {
     // flush data to target file.
     // if the file already exist. we merge them emplace.
     void database_blocks::mem_tree::flush(const std::filesystem::path& dst) {
+        std::scoped_lock lock(latch);
         if (!immutable) {
             set_immutable();
         }
@@ -52,6 +53,7 @@ namespace database_blocks {
 
 // put arbitrary byte data into the map.
     bool database_blocks::mem_tree::put(std::string &key, std::string &val) {
+        std::scoped_lock lock(latch);
         if (immutable) {
             return false;
         }
@@ -65,10 +67,12 @@ namespace database_blocks {
     }
 
     void database_blocks::mem_tree::set_immutable() {
+        std::scoped_lock l(latch);
         immutable = true;
     }
 
-    bool database_blocks::mem_tree::is_immutable() const {
+    bool database_blocks::mem_tree::is_immutable() {
+        std::scoped_lock lock(latch);
         return immutable;
     }
 
@@ -97,10 +101,12 @@ namespace database_blocks {
     }
 
     void mem_tree::clear() {
+        std::scoped_lock lock(latch);
         this->_store.clear();
     }
 
     void mem_tree::load(const std::filesystem::path& src) {
+        std::scoped_lock lock(latch);
         if (!std::filesystem::exists(path)){
             return;
         }

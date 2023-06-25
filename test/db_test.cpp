@@ -4,6 +4,16 @@
 
 #include <gtest/gtest.h>
 #include "db.h"
+#include "config.h"
 
-TEST(DbTests, SimpleDb) {
+class DbTests : public  ::testing::Test {
+protected:
+    void SetUp() override{
+        db = std::make_shared<database_blocks::db>(database_blocks::configs::default_config());
+    }
+
+    std::shared_ptr<database_blocks::db> db;
+};
+
+TEST_F(DbTests, SimpleDb) {
 }

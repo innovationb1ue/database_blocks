@@ -12,15 +12,22 @@
 namespace database_blocks {
     class db {
     public:
-        db(configs config);
+        explicit db(configs config);
+
+        explicit db();
 
         ~db() = default;
+
+        void put(std::string& key, std::string & val);
+
 
     private:
         // config struct
         configs config;
-        // more mem_tree means more possible memory occupation and better performance.
-        std::vector<mem_tree> mem_trees;
+        // current storages.
+        std::vector<mem_tree> trees;
+        // immutable trees that are ready to get flushed to file.
+        std::vector<mem_tree> immutable_trees;
     };
 }
 

@@ -2,7 +2,8 @@
 #define DATABASE_BLOCKS_MEM_TREE_IMPL_H
 
 #include<map>
-#include "config.h"
+#include"config.h"
+#include<mutex>
 
 namespace database_blocks {
     typedef std::map<std::string, std::string> store_type;
@@ -16,7 +17,7 @@ namespace database_blocks {
         mem_tree(database_blocks::configs &&config);
 
         // flush to disk.
-        void flush(const std::filesystem::path&);
+        void flush(const std::filesystem::path &);
 
         // put a k-v pair into the tree
         bool put(std::string &key, std::string &val);
@@ -31,7 +32,7 @@ namespace database_blocks {
         // set this tree in memory to immutable state and ready to be flush into disk.
         void set_immutable();
 
-        [[nodiscard]] bool is_immutable() const;
+        [[nodiscard]] bool is_immutable();
 
         [[nodiscard]] store_type get_store() const;
 
@@ -41,7 +42,7 @@ namespace database_blocks {
         void load();
 
         // load from file.
-        void load(const std::filesystem::path&);
+        void load(const std::filesystem::path &);
 
     public:
         // global config.
@@ -56,6 +57,8 @@ namespace database_blocks {
         bool immutable;
         // path for record file.
         std::string path;
+        // latch for RW
+        std::recursive_mutex latch;
     };
 }
 

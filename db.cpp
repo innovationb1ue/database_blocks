@@ -6,6 +6,21 @@
 
 #include <utility>
 
+#include "config.h"
+
 database_blocks::db::db(database_blocks::configs config): config(std::move(config)) {
 
+}
+
+database_blocks::db::db() {
+
+}
+
+void database_blocks::db::put(std::string& key, std::string & val) {
+    for (auto & tree : trees){
+        auto res = tree.put(key, val);
+        if (res){
+            return;
+        }
+    }
 }
