@@ -32,7 +32,5 @@ target_include_directories(
 )
 
 
-
-
 include(GoogleTest)
 gtest_discover_tests(hello_test)

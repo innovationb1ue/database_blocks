@@ -8,17 +8,22 @@
 #include <cstdint>
 #include <string>
 #include <filesystem>
+#include <utility>
 
 namespace database_blocks {
     struct configs {
-        static configs default_config() {
-            return {
-                    .mem_tree_size = 4096,
-                    .db_store_path = std::filesystem::current_path()
-            };
+        configs(int64_t i, std::filesystem::path p) : mem_tree_size(i), db_store_path(std::move(p)) {
+
+        };
+
+        configs(){
+            this->mem_tree_size = 4096;
+            this->db_store_path = std::filesystem::current_path() / "db.txt";
         }
 
-        configs() = default;
+        static configs default_config() {
+            return {4096, std::filesystem::current_path() / "db.txt"};
+        }
 
     public:
         // mem tree size in memory.

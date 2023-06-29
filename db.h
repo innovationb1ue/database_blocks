@@ -20,6 +20,8 @@ namespace database_blocks {
 
         void put(std::string& key, std::string & val);
 
+        void new_memtree();
+
 
     private:
         // config struct

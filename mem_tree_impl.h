@@ -1,9 +1,11 @@
 #ifndef DATABASE_BLOCKS_MEM_TREE_IMPL_H
 #define DATABASE_BLOCKS_MEM_TREE_IMPL_H
 
-#include<map>
-#include"config.h"
-#include<mutex>
+#include <map>
+
+#include "config.h"
+#include <mutex>
+#include <optional>
 
 namespace database_blocks {
     typedef std::map<std::string, std::string> store_type;
