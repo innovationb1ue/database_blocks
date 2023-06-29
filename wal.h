@@ -4,12 +4,11 @@
 
 #ifndef DATABASE_BLOCKS_WAL_H
 #define DATABASE_BLOCKS_WAL_H
-namespace database_blocks {
-
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <filesystem>
+namespace database_blocks {
 
     namespace fs = std::filesystem;
 
