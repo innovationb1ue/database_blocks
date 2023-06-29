@@ -5,6 +5,7 @@
 
 #include "config.h"
 #include <mutex>
+#include <vector>
 #include <optional>
 
 namespace database_blocks {
@@ -14,9 +15,19 @@ namespace database_blocks {
     public:
         mem_tree();
 
-        mem_tree(database_blocks::configs &config);
+        explicit mem_tree(database_blocks::configs &config);
 
-        mem_tree(database_blocks::configs &&config);
+        explicit mem_tree(database_blocks::configs &&config);
+
+        mem_tree(mem_tree &other){
+            _store = other._store;
+            immutable = false;
+        }
+
+        mem_tree(mem_tree && other) noexcept {
+            _store = std::move(other._store);
+            immutable = false;
+        }
 
         // flush to disk.
         void flush(const std::filesystem::path &);
@@ -34,9 +45,9 @@ namespace database_blocks {
         // set this tree in memory to immutable state and ready to be flush into disk.
         void set_immutable();
 
-        [[nodiscard]] bool is_immutable();
+        bool is_immutable();
 
-        [[nodiscard]] store_type get_store() const;
+        store_type get_store() const;
 
         std::optional<std::string> get(std::string &key);
 
@@ -59,8 +70,6 @@ namespace database_blocks {
         bool immutable;
         // path for record file.
         std::string path;
-        // latch for RW
-        std::recursive_mutex latch;
     };
 }
 

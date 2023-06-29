@@ -25,6 +25,18 @@ namespace database_blocks {
             return {4096, std::filesystem::current_path()};
         }
 
+        configs(configs&& other) noexcept {
+            this->db_store_path = std::move(other.db_store_path);
+            this->mem_tree_size = other.mem_tree_size;
+        }
+
+        configs(configs const &other){
+            this->mem_tree_size = other.mem_tree_size;
+            this->db_store_path = other.db_store_path;
+        }
+
+        configs& operator= (configs const& other)= default;
+
     public:
         // mem tree size in memory.
         int64_t mem_tree_size;

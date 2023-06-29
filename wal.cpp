@@ -44,15 +44,16 @@ namespace database_blocks {
         std::ofstream log_file(log_file_path, std::ios::app | std::ios::binary);
         if (!log_file) {
             std::cerr << "Failed to open log file: " << log_file_path << std::endl;
-            // Handle error
+            return;
         }
 
         // Write the length of the data as a 4-byte integer
-        const std::size_t length = data.length();
-        log_file.write(reinterpret_cast<const char*>(&length), sizeof(std::size_t));
+        const size_t length = data.length();
+        log_file.write(reinterpret_cast<const char*>(&length), sizeof(size_t));
 
         // Write the actual data
         log_file.write(data.c_str(), length);
+        log_file.flush();
 
         if (!log_file) {
             std::cerr << "Failed to write to log file: " << log_file_path << std::endl;

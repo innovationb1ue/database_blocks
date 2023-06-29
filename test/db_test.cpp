@@ -5,6 +5,8 @@
 #include <gtest/gtest.h>
 #include "db.h"
 #include "config.h"
+#include "mem_tree_impl.h"
+#include "wal.h"
 
 class DbTests : public  ::testing::Test {
 protected:
@@ -15,5 +17,13 @@ protected:
     std::shared_ptr<database_blocks::db> db;
 };
 
-TEST_F(DbTests, SimpleDb) {
+TEST_F(DbTests, WalTest) {
+    db->trees.emplace_back();
+    db->trees.emplace_back();
+}
+
+TEST_F(DbTests, WALTEST){
+    auto mgr = database_blocks::wal_manager("./db.txt");
+    mgr.write_to_wal("./db1.txt", "123456");
+    mgr.read_from_wal("./db1.txt");
 }

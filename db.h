@@ -23,11 +23,11 @@ namespace database_blocks {
         void new_memtree();
 
 
+        // current storages.
+        std::vector<database_blocks::mem_tree> trees;
     private:
         // config struct
         configs config;
-        // current storages.
-        std::vector<mem_tree> trees;
         // immutable trees that are ready to get flushed to file.
         std::vector<mem_tree> immutable_trees;
     };
