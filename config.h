@@ -18,11 +18,11 @@ namespace database_blocks {
 
         configs(){
             this->mem_tree_size = 4096;
-            this->db_store_path = std::filesystem::current_path() / "db.txt";
+            this->db_store_path = std::filesystem::current_path();
         }
 
         static configs default_config() {
-            return {4096, std::filesystem::current_path() / "db.txt"};
+            return {4096, std::filesystem::current_path()};
         }
 
     public:
