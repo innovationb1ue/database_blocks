@@ -4,6 +4,7 @@
 #include <fstream>
 #include "config.h"
 #include "cstdint"
+#include "cstring"
 
 
 namespace database_blocks {
