@@ -90,18 +90,18 @@ TEST_F(BasicTest, Int64Assertion) {
     }
 }
 
-TEST(BasicLoadTest, WriteIntIntoValAssertion) {
-    auto db = database_blocks::mem_tree();
+TEST(BasicLoadTest, WriteIntAsValAssertion) {
+    auto tree = database_blocks::mem_tree();
     int k = 0;
     auto k1 = std::to_string(k);
     auto v = 64;
     auto v2 = 996;
     std::string v1;
-    v1.reserve(sizeof v * 2);
+    v1.resize(sizeof v + sizeof v2);
     memcpy(v1.data(), reinterpret_cast<const char *>(&v), sizeof v);
-    memcpy(v1.data() + sizeof v, reinterpret_cast<const char *>(&v2), sizeof v);
-    db.put(k1, v1);
-    auto res = db.get(k1);
+    memcpy(v1.data() + sizeof v, reinterpret_cast<const char *>(&v2), sizeof v2);
+    tree.put(k1, v1);
+    auto res = tree.get(k1);
     auto ptr = reinterpret_cast<int *>(res->data());
     ASSERT_EQ(64, *ptr);
     ptr++;
@@ -119,12 +119,12 @@ TEST(BasicLoadTest, CompareBytes) {
 
     auto v = 64;
     std::string v1;
-    v1.reserve(sizeof v * 2);
+    v1.resize(sizeof v * 2);
     memcpy(v1.data(), reinterpret_cast<const char *>(&v), sizeof v);
 
     auto v2_i = 456;
     std::string v2;
-    v2.reserve(sizeof v2_i * 2);
+    v2.resize(sizeof v2_i * 2);
     memcpy(v2.data(), reinterpret_cast<const char *>(&v2_i), sizeof v2_i);
 
     db.put(k1, v1);

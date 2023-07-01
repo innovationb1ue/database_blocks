@@ -12,19 +12,19 @@ namespace database_blocks {
 
     namespace fs = std::filesystem;
 
-    class wal_manager {
+    class wal {
     public:
-        explicit wal_manager(const fs::path &log_file_path);
+        explicit wal(const fs::path &log_file_path);
 
-        ~wal_manager();
+        ~wal();
 
-        void write_to_wal(const fs::path &log_file_path, const std::string &data);
+        void write_to_wal(const std::string &data);
 
-        void read_from_wal(const fs::path &log_file_path);
+        static std::string &read_from_wal(const fs::path &log_file_path);
 
     private:
         fs::path log_file_path_;
-        std::ofstream log_file_;
+        std::fstream log_file_;
     };
 
 }

@@ -11,58 +11,70 @@ namespace database_blocks {
         this->path = config.db_store_path / "db.txt";
     }
 
-    database_blocks::mem_tree::mem_tree(configs &&config){
+    database_blocks::mem_tree::mem_tree(configs &&config) {
         this->_store = std::map<std::string, std::string>();
         this->immutable = false;
         this->path = config.db_store_path / "db.txt";
         this->config = std::move(config);
     }
 
-    database_blocks::mem_tree::mem_tree() : mem_tree(configs::default_config()){
+    database_blocks::mem_tree::mem_tree() : mem_tree(configs::default_config()) {
 
     };
 
     // flush data to target file.
     // if the file already exist. we merge them emplace.
-    void database_blocks::mem_tree::flush(const std::filesystem::path& dst) {
+    void database_blocks::mem_tree::flush(const std::filesystem::path &dst) {
         if (!immutable) {
             set_immutable();
         }
         std::ofstream file;
         // merge if we need
-        if (std::filesystem::exists(dst)){
-            auto file_tree = mem_tree();
-            file_tree.load(dst);
-            this->merge(std::move(file_tree));
-
-        }
-        file.open(dst, std::ios::binary);
-        auto it = _store.begin();
-        while (it != _store.end()) {
-            auto key_size = it->first.size();
-            auto val_size = it->second.size();
+//        if (std::filesystem::exists(dst)) {
+//            auto file_tree = mem_tree();
+//            file_tree.load(dst);
+//            this->merge(std::move(file_tree));
+//        }
+        file.open(dst, std::ios::binary | std::ios::trunc);
+        for (auto &it: _store) {
+            auto key_size = it.first.size();
+            auto val_size = it.first.size();
             file.write(reinterpret_cast<const char *>(&key_size), sizeof(key_size));
             file.write(reinterpret_cast<const char *>(&val_size), sizeof(val_size));
-            file.write(it->first.data(), it->first.size());
-            file.write(it->second.data(), it->second.size());
-            it++;
+            file.write(it.first.data(), it.first.size());
+            file.write(it.second.data(), it.second.size());
         }
         file.flush();
     }
 
-// put arbitrary byte data into the map.
-    bool database_blocks::mem_tree::put(std::string &key, std::string &val) {
+    // put arbitrary byte data into the map.
+    template<class T>
+    requires std::is_same<T &, std::string &>::value
+    bool database_blocks::mem_tree::put(T &&key, T &&val) {
         if (immutable) {
             return false;
         }
-        auto res = _store.insert_or_assign(key, val);
-        // set immutable if maximum size is reached
+        auto pre_element = _store.find(key);
         size += (key.size() + val.size());
+        size_t pre_size;
+        // has same key element, just replace the value.
+        if (pre_element != _store.end()) {
+            pre_size = pre_element->second.size();
+            size -= pre_size;
+            pre_element->second = std::forward<T>(val);
+        } else {
+            _store.emplace(std::forward<T>(key), std::forward<T>(val));
+        }
+
         if (size > config.mem_tree_size) {
             this->set_immutable();
         }
-        return res.second;
+        return pre_element == _store.end();
     }
+
+    template bool database_blocks::mem_tree::put<std::string &&>(std::string &&, std::string &&);
+
+    template bool database_blocks::mem_tree::put<std::string &>(std::string &, std::string &);
 
     void database_blocks::mem_tree::set_immutable() {
         immutable = true;
@@ -100,8 +112,8 @@ namespace database_blocks {
         this->_store.clear();
     }
 
-    void mem_tree::load(const std::filesystem::path& src) {
-        if (!std::filesystem::exists(path)){
+    void mem_tree::load(const std::filesystem::path &src) {
+        if (!std::filesystem::exists(path)) {
             return;
         }
 

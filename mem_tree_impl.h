@@ -7,6 +7,7 @@
 #include <mutex>
 #include <vector>
 #include <optional>
+#include <concepts>
 
 namespace database_blocks {
     typedef std::map<std::string, std::string> store_type;
@@ -19,21 +20,17 @@ namespace database_blocks {
 
         explicit mem_tree(database_blocks::configs &&config);
 
-        mem_tree(mem_tree &other){
-            _store = other._store;
-            immutable = false;
-        }
+        mem_tree(const mem_tree &other) = default;
 
-        mem_tree(mem_tree && other) noexcept {
-            _store = std::move(other._store);
-            immutable = false;
-        }
+        mem_tree(mem_tree &&other) = default;
 
         // flush to disk.
         void flush(const std::filesystem::path &);
 
         // put a k-v pair into the tree
-        bool put(std::string &key, std::string &val);
+        template<class T>
+        requires std::is_same<T &, std::string &>::value
+        bool put(T &&key, T &&val);
 
         void clear();
 
@@ -47,7 +44,7 @@ namespace database_blocks {
 
         bool is_immutable();
 
-        store_type get_store() const;
+        [[nodiscard]] store_type get_store() const;
 
         std::optional<std::string> get(std::string &key);
 

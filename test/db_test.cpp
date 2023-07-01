@@ -23,7 +23,7 @@ TEST_F(DbTests, WalTest) {
 }
 
 TEST_F(DbTests, WALTEST){
-    auto mgr = database_blocks::wal_manager("./db.txt");
-    mgr.write_to_wal("./db1.txt", "123456");
+    auto mgr = database_blocks::wal("./db1.txt");
+    mgr.write_to_wal("123456");
     mgr.read_from_wal("./db1.txt");
 }
