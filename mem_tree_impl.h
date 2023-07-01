@@ -12,6 +12,8 @@
 namespace database_blocks {
     typedef std::map<std::string, std::string> store_type;
 
+    // this class is not synchronized internally.
+    // so make sure it is used in concurrent safe environment.
     class mem_tree {
     public:
         mem_tree();
@@ -27,6 +29,8 @@ namespace database_blocks {
         // flush to disk.
         void flush(const std::filesystem::path &);
 
+        void flush();
+
         // put a k-v pair into the tree
         template<class T>
         requires std::is_same<T &, std::string &>::value
@@ -36,13 +40,23 @@ namespace database_blocks {
 
         bool remove(std::string &key);
 
+        // serialize the tree data into bytes contained in the std::string.
+        // intended for storage purpose.
+        std::string serialize();
+
+        // deserialize the tree from byte stream;
+        std::string deserialize();
+
         // merge two mem_tree into one.
         bool merge(const mem_tree &&other);
+
+        // merge by file path.
+        bool merge(const std::filesystem::path &);
 
         // set this tree in memory to immutable state and ready to be flush into disk.
         void set_immutable();
 
-        bool is_immutable();
+        bool is_immutable() const;
 
         [[nodiscard]] store_type get_store() const;
 
@@ -61,7 +75,7 @@ namespace database_blocks {
     private:
         // storage
         store_type _store;
-        // storage size in bytes
+        // storage size in bytes with key and value size added together.
         size_t size = 0;
         // maximum storage size in byte.
         bool immutable;

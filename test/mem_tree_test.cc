@@ -55,13 +55,32 @@ TEST_F(BasicTest, LoadAssertion) {
     }
     tree.flush(tree.config.db_store_path / "db.txt");
 
-    auto db2 = database_blocks::mem_tree();
-    db2.load();
+    auto tree2 = database_blocks::mem_tree();
+    tree2.load();
     std::string k2 = "5";
-    ASSERT_EQ(db2.get(k2), "5");
+    ASSERT_EQ(tree2.get(k2), "5");
 
     std::string k3 = "8";
     ASSERT_EQ(tree.get(k3), "8");
+}
+
+TEST_F(BasicTest, LoadAssertion2) {
+    std::string k1 = "123";
+    std::string v1 = "456789";
+    std::string k2 = "456789";
+    std::string v2 = "454444";
+    tree.put(k1, v1);
+    tree.put(k2, v2);
+
+    auto res = tree.get(k1);
+    ASSERT_TRUE(res.has_value());
+    ASSERT_TRUE(res == "456789");
+    tree.flush();
+
+    auto tree2 = database_blocks::mem_tree();
+    tree2.load();
+    ASSERT_EQ(tree2.get(k1), "456789");
+    ASSERT_EQ(tree2.get(k2), "454444");
 }
 
 TEST_F(BasicTest, Int64Assertion) {
@@ -133,4 +152,32 @@ TEST(BasicLoadTest, CompareBytes) {
     auto ptr = reinterpret_cast<int *>(res->data());
     ASSERT_EQ(v2_i, *ptr);
 
+}
+
+TEST_F(BasicTest, TestSerialize) {
+    std::string k1 = "123";
+    std::string v1 = "456789";
+    std::string k2 = "456789";
+    std::string v2 = "454444";
+    tree.put(k1, v1);
+    tree.put(k2, v2);
+
+    auto buf = tree.serialize();
+    auto res = tree.get(k1);
+
+    char *p = buf.data();
+    // key size
+    auto ptr = reinterpret_cast<size_t *>(p);
+    ASSERT_EQ(k1.size(), *ptr);
+    p += sizeof(size_t);
+    // val size
+    ptr = reinterpret_cast<size_t *>(p);
+    ASSERT_EQ(k2.size(), *ptr);
+    p += sizeof(size_t);
+    // key 1
+    std::string key1;
+    key1.resize(k1.size());
+    memcpy(key1.data(), p, k1.size());
+    ASSERT_EQ(k1, key1);
+    p += v1.size();
 }

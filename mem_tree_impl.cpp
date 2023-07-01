@@ -3,6 +3,8 @@
 #include <iostream>
 #include <fstream>
 #include "config.h"
+#include "cstdint"
+
 
 namespace database_blocks {
     database_blocks::mem_tree::mem_tree(configs &config) : config(config) {
@@ -15,12 +17,36 @@ namespace database_blocks {
         this->_store = std::map<std::string, std::string>();
         this->immutable = false;
         this->path = config.db_store_path / "db.txt";
-        this->config = std::move(config);
+        this->config = config;
     }
 
-    database_blocks::mem_tree::mem_tree() : mem_tree(configs::default_config()) {
+    std::string database_blocks::mem_tree::serialize() {
+        std::string buf;
+        // total element(key, val) size and two length int64 for each.
+        // do we need a timestamp here?
+        size_t encode_size = this->size + this->_store.size() * sizeof(int64_t) * 2;
+        buf.resize(encode_size);
+        char *p = buf.data();
+        for (auto &it: _store) {
+            auto key_size = it.first.size();
+            auto val_size = it.second.size();
+            // write key size
+            memcpy(p, reinterpret_cast<const char *>(&key_size), sizeof(key_size));
+            p += sizeof(key_size);
+            // write val size
+            memcpy(p, reinterpret_cast<const char *>(&val_size), sizeof(val_size));
+            p += sizeof(val_size);
+            // write key
+            memcpy(p, it.first.data(), it.first.size());
+            p += key_size;
+            // write val
+            memcpy(p, it.second.data(), it.second.size());
+            p += val_size;
+        }
+        return buf;
+    }
 
-    };
+    database_blocks::mem_tree::mem_tree() : mem_tree(configs::default_config()) {}
 
     // flush data to target file.
     // if the file already exist. we merge them emplace.
@@ -29,22 +55,20 @@ namespace database_blocks {
             set_immutable();
         }
         std::ofstream file;
-        // merge if we need
-//        if (std::filesystem::exists(dst)) {
-//            auto file_tree = mem_tree();
-//            file_tree.load(dst);
-//            this->merge(std::move(file_tree));
-//        }
         file.open(dst, std::ios::binary | std::ios::trunc);
         for (auto &it: _store) {
             auto key_size = it.first.size();
-            auto val_size = it.first.size();
+            auto val_size = it.second.size();
             file.write(reinterpret_cast<const char *>(&key_size), sizeof(key_size));
             file.write(reinterpret_cast<const char *>(&val_size), sizeof(val_size));
             file.write(it.first.data(), it.first.size());
             file.write(it.second.data(), it.second.size());
         }
         file.flush();
+    }
+
+    void database_blocks::mem_tree::flush() {
+        return flush(path);
     }
 
     // put arbitrary byte data into the map.
@@ -55,12 +79,15 @@ namespace database_blocks {
             return false;
         }
         auto pre_element = _store.find(key);
+        // add new key and val size.
         size += (key.size() + val.size());
-        size_t pre_size;
+        size_t pre_val_size = 0;
         // has same key element, just replace the value.
         if (pre_element != _store.end()) {
-            pre_size = pre_element->second.size();
-            size -= pre_size;
+            // remove the old value from total size.
+            pre_val_size = pre_element->second.size();
+            size -= pre_val_size;
+            // forwarding the value to
             pre_element->second = std::forward<T>(val);
         } else {
             _store.emplace(std::forward<T>(key), std::forward<T>(val));
@@ -80,13 +107,24 @@ namespace database_blocks {
         immutable = true;
     }
 
-    bool database_blocks::mem_tree::is_immutable() {
+    bool database_blocks::mem_tree::is_immutable() const {
         return immutable;
     }
 
     bool database_blocks::mem_tree::merge(const database_blocks::mem_tree &&other) {
         this->_store.merge(std::move(other.get_store()));
         return true;
+    }
+
+    bool database_blocks::mem_tree::merge(const std::filesystem::path &file) {
+        // merge if the file exist
+        if (std::filesystem::exists(file)) {
+            auto file_tree = mem_tree();
+            file_tree.load(file);
+            this->merge(std::move(file_tree));
+            return true;
+        }
+        return false;
     }
 
     database_blocks::store_type database_blocks::mem_tree::get_store() const {

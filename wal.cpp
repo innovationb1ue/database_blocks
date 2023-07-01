@@ -42,7 +42,10 @@ namespace database_blocks {
     void wal::write_to_wal(const std::string &data) {
         // Write the length of the data as a 4-byte integer
         // wal file format:
-        // int_64_t:
+        // int_64_t: 8 bytes key length.
+        // int_64_t: 8 bytes val length.
+        // key
+        //
         const size_t length = data.length();
         log_file_.write(reinterpret_cast<const char *>(&length), sizeof(size_t));
 
