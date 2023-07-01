@@ -1,0 +1,2 @@
+add_library(database_blocks_util STATIC uuid_util.h)
+set_target_properties(lib_uuid PROPERTIES LINKER_LANGUAGE CXX)
