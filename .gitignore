@@ -1,6 +1,7 @@
 # Prerequisites
 *.d
 .idea/
+
 # Compiled Object files
 *.slo
 *.lo
@@ -33,3 +34,9 @@
 
 /build
 /cmake-build-debug
+/_deps
+/.cache
+CMakeFiles
+Makefile
+CMakeCache.txt
+cmake_install.cmake

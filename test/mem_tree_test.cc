@@ -154,7 +154,6 @@ TEST(BasicLoadTest, CompareBytes) {
     std::string v2;
     v2.resize(sizeof v2_i * 2);
     memcpy(v2.data(), reinterpret_cast<const char *>(&v2_i), sizeof v2_i);
-
     db.put(k1, v1);
     db.put(k1, v2);
     auto res = db.get(k1);
