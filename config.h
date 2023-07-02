@@ -38,7 +38,7 @@ namespace database_blocks {
         configs& operator= (configs const& other)= default;
 
     public:
-        // mem tree size in memory.
+        // mem tree kv_size_in_bytes in memory.
         int64_t mem_tree_size;
         // path to store db files. this should point to a directory where we can freely use.
         std::filesystem::path db_store_path;

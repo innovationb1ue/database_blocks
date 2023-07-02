@@ -45,7 +45,7 @@ namespace database_blocks {
         std::string serialize();
 
         // deserialize the tree from byte stream;
-        std::string deserialize();
+        std::string deserialize(std::string, size_t size);
 
         // merge two mem_tree into one.
         bool merge(const mem_tree &&other);
@@ -75,9 +75,9 @@ namespace database_blocks {
     private:
         // storage
         store_type _store;
-        // storage size in bytes with key and value size added together.
-        size_t size = 0;
-        // maximum storage size in byte.
+        // storage kv_size_in_bytes in bytes with key and value kv_size_in_bytes added together.
+        size_t kv_size_in_bytes = 0;
+        // maximum storage kv_size_in_bytes in byte.
         bool immutable;
         // path for record file.
         std::string path;

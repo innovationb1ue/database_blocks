@@ -12,8 +12,17 @@ class BasicTest : public ::testing::Test {
 protected:
     void SetUp() override {
         auto default_config = database_blocks::configs::default_config();
+        k1 = "123";
+        v1 = "456789";
+        k2 = "456789";
+        v2 = "454444";
+        k3 = "456";
+        v3 = "888888";
+        tree.put(k1, v1);
+        tree.put(k2, v2);
     }
 
+    std::string k1, v1, k2, v2, k3, v3;
     database_blocks::mem_tree tree{database_blocks::configs::default_config()};
 };
 
@@ -166,11 +175,11 @@ TEST_F(BasicTest, TestSerialize) {
     auto res = tree.get(k1);
 
     char *p = buf.data();
-    // key size
+    // key kv_size_in_bytes
     auto ptr = reinterpret_cast<size_t *>(p);
     ASSERT_EQ(k1.size(), *ptr);
     p += sizeof(size_t);
-    // val size
+    // val kv_size_in_bytes
     ptr = reinterpret_cast<size_t *>(p);
     ASSERT_EQ(k2.size(), *ptr);
     p += sizeof(size_t);
@@ -180,4 +189,13 @@ TEST_F(BasicTest, TestSerialize) {
     memcpy(key1.data(), p, k1.size());
     ASSERT_EQ(k1, key1);
     p += v1.size();
+}
+
+TEST_F(BasicTest, TestDeserialize) {
+    auto buf = tree.serialize();
+    auto tree2 = database_blocks::mem_tree();
+    tree2.deserialize(buf, buf.size());
+    auto res = tree2.get(k1);
+    ASSERT_TRUE(res.has_value());
+    ASSERT_EQ(res, v1);
 }

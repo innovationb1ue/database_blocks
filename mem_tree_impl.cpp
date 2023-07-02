@@ -23,18 +23,18 @@ namespace database_blocks {
 
     std::string database_blocks::mem_tree::serialize() {
         std::string buf;
-        // total element(key, val) size and two length int64 for each.
+        // total element(key, val) kv_size_in_bytes and two length int64 for each.
         // do we need a timestamp here?
-        size_t encode_size = this->size + this->_store.size() * sizeof(int64_t) * 2;
+        size_t encode_size = this->kv_size_in_bytes + this->_store.size() * sizeof(int64_t) * 2;
         buf.resize(encode_size);
         char *p = buf.data();
         for (auto &it: _store) {
             auto key_size = it.first.size();
             auto val_size = it.second.size();
-            // write key size
+            // write key kv_size_in_bytes
             memcpy(p, reinterpret_cast<const char *>(&key_size), sizeof(key_size));
             p += sizeof(key_size);
-            // write val size
+            // write val kv_size_in_bytes
             memcpy(p, reinterpret_cast<const char *>(&val_size), sizeof(val_size));
             p += sizeof(val_size);
             // write key
@@ -47,10 +47,32 @@ namespace database_blocks {
         return buf;
     }
 
+    // deserialize string into mem_tree
+    std::string mem_tree::deserialize(std::string val, size_t size) {
+        if (size == 0) {
+            return {};
+        }
+        auto pos = val.data();
+        size_t deserialized_size = 0;
+        size_t *k_size;
+        size_t *v_size;
+        while (deserialized_size < size) {
+            // get sizes
+            k_size = reinterpret_cast<size_t *>(pos);
+            pos += sizeof(size_t);
+            v_size = reinterpret_cast<size_t *>(pos);
+            pos += sizeof(size_t);
+            // construct map element.
+            _store.emplace(std::string(pos, *k_size), std::string(pos + *k_size, *v_size));
+            pos += *k_size + *v_size;
+            deserialized_size += 2 * sizeof(size_t) + *k_size + *v_size;
+        }
+        return {};
+    }
+
     database_blocks::mem_tree::mem_tree() : mem_tree(configs::default_config()) {}
 
-    // flush data to target file.
-    // if the file already exist. we merge them emplace.
+    // flush data to target file. truncate file first.
     void database_blocks::mem_tree::flush(const std::filesystem::path &dst) {
         if (!immutable) {
             set_immutable();
@@ -80,21 +102,21 @@ namespace database_blocks {
             return false;
         }
         auto pre_element = _store.find(key);
-        // add new key and val size.
-        size += (key.size() + val.size());
+        // add new key and val kv_size_in_bytes.
+        kv_size_in_bytes += (key.size() + val.size());
         size_t pre_val_size = 0;
         // has same key element, just replace the value.
         if (pre_element != _store.end()) {
-            // remove the old value from total size.
+            // remove the old value from total kv_size_in_bytes.
             pre_val_size = pre_element->second.size();
-            size -= pre_val_size;
+            kv_size_in_bytes -= pre_val_size;
             // forwarding the value to
             pre_element->second = std::forward<T>(val);
         } else {
             _store.emplace(std::forward<T>(key), std::forward<T>(val));
         }
 
-        if (size > config.mem_tree_size) {
+        if (kv_size_in_bytes > config.mem_tree_size) {
             this->set_immutable();
         }
         return pre_element == _store.end();
@@ -173,4 +195,5 @@ namespace database_blocks {
         }
 
     }
+
 }
