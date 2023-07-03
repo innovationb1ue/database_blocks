@@ -3,14 +3,14 @@
 //
 
 #include <gtest/gtest.h>
-#include "db.h"
-#include "config.h"
-#include "mem_tree_impl.h"
-#include "wal.h"
+#include "src/db.h"
+#include "src/config.h"
+#include "src/mem_tree_impl.h"
+#include "src/wal.h"
 
-class DbTests : public  ::testing::Test {
+class DbTests : public ::testing::Test {
 protected:
-    void SetUp() override{
+    void SetUp() override {
         db = std::make_shared<database_blocks::db>(database_blocks::configs::default_config());
     }
 

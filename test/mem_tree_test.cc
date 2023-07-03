@@ -2,11 +2,11 @@
 // Created by 钟卓凡 on 22/06/2023.
 //
 #include <gtest/gtest.h>
-#include "mem_tree_impl.h"
+#include "src/mem_tree_impl.h"
 #include <string>
 #include <sstream>
 #include <iostream>
-#include "config.h"
+#include "src/config.h"
 
 class BasicTest : public ::testing::Test {
 protected:
