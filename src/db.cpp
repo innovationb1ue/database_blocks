@@ -9,6 +9,7 @@
 
 #include "config.h"
 #include <vector>
+#include "spdlog/spdlog.h"
 
 database_blocks::db::db(database_blocks::configs config): config(std::move(config)) {
 }
@@ -19,9 +20,14 @@ database_blocks::db::db() {
 
 void database_blocks::db::put(std::string& key, std::string & val) {
     // generate an uuid and make it operation id.
-    for (auto & tree : trees){
+    // ensure only one tree receive the put request here.
+    spdlog::info("hello");
+    for (auto &tree: trees) {
+        if (tree.is_immutable()) {
+            continue;
+        }
         auto res = tree.put(key, val);
-        if (res){
+        if (res) {
             return;
         }
     }

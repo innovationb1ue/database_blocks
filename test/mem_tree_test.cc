@@ -20,6 +20,7 @@ protected:
         v3 = "888888";
         tree.put(k1, v1);
         tree.put(k2, v2);
+        tree.put(k3, v3);
     }
 
     std::string k1, v1, k2, v2, k3, v3;

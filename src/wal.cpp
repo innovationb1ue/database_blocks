@@ -23,7 +23,10 @@ namespace database_blocks {
             // Handle error
         }
 
-        std::size_t length = 6;
+        // should read data into buf and decode them into operations. 
+        std::string buf;
+        buf.resize(1024);
+
         while (!read_file.eof()) {
             std::string data(length, '\0');
             read_file.read(&data[0], length);

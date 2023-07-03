@@ -3,7 +3,6 @@
 #include <iostream>
 #include <fstream>
 #include "config.h"
-#include "cstdint"
 #include "cstring"
 
 
@@ -177,10 +176,13 @@ namespace database_blocks {
         if (!std::filesystem::exists(path)) {
             return;
         }
-
         std::ifstream src_file;
         src_file.open(src, std::ios::binary);
         src_file.seekg(0, std::ios::beg);
+
+        std::string buf;
+        buf.resize(1024);
+        // read data into buffer and deserialize them.
         while (!src_file.eof()) {
             size_t key_size;
             src_file.read(reinterpret_cast<char *>(&key_size), sizeof(key_size));

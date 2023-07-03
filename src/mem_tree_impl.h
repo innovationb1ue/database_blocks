@@ -45,6 +45,7 @@ namespace database_blocks {
         std::string serialize();
 
         // deserialize the tree from byte stream;
+        // will insert the data decoded into _store.
         std::string deserialize(std::string, size_t size);
 
         // merge two mem_tree into one.
