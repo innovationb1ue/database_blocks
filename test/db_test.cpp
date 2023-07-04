@@ -33,6 +33,11 @@ TEST_F(DbTests, EmptyBuildTest) {
 
 TEST_F(DbTests, WALTEST) {
     auto mgr = database_blocks::wal("./db1.txt");
-    mgr.write_to_wal("123456");
-    mgr.read_from_wal("./db1.txt");
+    mgr.write_to_wal("PUT", "123", "123456");
+    auto m = mgr.read_from_wal();
+    auto it = m.begin();
+    while (it != m.end()) {
+        std::cout << "key = " << it->first << "val = " << it->second << std::endl;
+        it++;
+    }
 }

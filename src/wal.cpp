@@ -1,11 +1,8 @@
 
 #include "wal.h"
-#include "iostream"
-#include "uuid.h"
-#include "fstream"
 
 namespace database_blocks {
-    wal::wal(const fs::path &log_file_path)
+    wal::wal(const std::filesystem::path &log_file_path)
             : log_file_path_(log_file_path), log_file_(log_file_path, std::ios::in | std::ios::app | std::ios::binary) {
         if (!log_file_) {
             std::cerr << "Failed to open log file: " << log_file_path << std::endl;
@@ -16,52 +13,58 @@ namespace database_blocks {
         log_file_.close();
     }
 
-    std::string &wal::read_from_wal(const std::filesystem::path &log_file_path) {
-        std::ifstream read_file(log_file_path, std::ios::in | std::ios::binary);
-        if (!read_file) {
-            std::cerr << "Failed to open log file for reading: " << log_file_path << std::endl;
-            // Handle error
+    std::map<std::string, std::string> wal::read_from_wal() {
+        std::map<std::string, std::string> dataMap;
+
+        log_file_.seekp(std::ios::beg);
+
+        // Read the file and deserialize the data
+        while (true) {
+            // Read the sizes from the log file
+            size_t operationSize;
+            size_t keySize;
+            size_t valSize;
+
+            log_file_.read(reinterpret_cast<char *>(&operationSize), sizeof(size_t));
+            log_file_.read(reinterpret_cast<char *>(&keySize), sizeof(size_t));
+            log_file_.read(reinterpret_cast<char *>(&valSize), sizeof(size_t));
+
+            // Check for end-of-file
+            if (log_file_.eof()) {
+                break;
+            }// Read the values from the log file
+            std::string operation(operationSize, '\0');
+            std::string key(keySize, '\0');
+            std::string val(valSize, '\0');
+
+            log_file_.read(&operation[0], operationSize);
+            log_file_.read(&key[0], keySize);
+            log_file_.read(&val[0], valSize);
+
+            // Add the key-value pair to the map
+            dataMap[key] = val;
         }
 
-        // should read data into buf and decode them into operations.
-        std::string buf;
-        buf.resize(1024);
-        auto length = 6;
-
-        while (!read_file.eof()) {
-            std::string data(length, '\0');
-            read_file.read(&data[0], length);
-
-            // Process the read data (e.g., print to console)
-            std::cout << "Read data: " << data << std::endl;
-        }
-        if (!read_file.eof()) {
-            std::cerr << "Error occurred while reading from log file: " << log_file_path << std::endl;
-            // Handle error
-        }
-        read_file.close();
-        return (std::string &) "123";
+        return dataMap;
     }
 
-    void wal::write_to_wal(const std::string &data) {
-        // Write the length of the data as a 4-byte integer
-        // wal file format:
-        // int_64_t: 8 bytes key length.
-        // int_64_t: 8 bytes val length.
-        // key
-        //
-        const size_t length = data.length();
-        log_file_.write(reinterpret_cast<const char *>(&length), sizeof(size_t));
+    void wal::write_to_wal(const std::string &operation, const std::string &key, const std::string &val) {
+        // Calculate the sizes of the strings
+        size_t operationSize = static_cast<size_t>(operation.size());
+        size_t keySize = static_cast<size_t>(key.size());
+        size_t valSize = static_cast<size_t>(val.size());
 
-        // Write the actual data
-        log_file_.write(data.c_str(), length);
+        // Write the sizes to the log file
+        log_file_.write(reinterpret_cast<const char *>(&operationSize), sizeof(size_t));
+        log_file_.write(reinterpret_cast<const char *>(&keySize), sizeof(size_t));
+        log_file_.write(reinterpret_cast<const char *>(&valSize), sizeof(size_t));
+
+        // Write the values to the log file
+        log_file_.write(operation.data(), operationSize);
+        log_file_.write(key.data(), keySize);
+        log_file_.write(val.data(), valSize);
+
+        // Flush immediately
         log_file_.flush();
-
-        if (!log_file_) {
-            std::cerr << "Failed to write to log file: " << log_file_path_ << std::endl;
-            // Handle error
-        }
-
-        log_file_.close();
     }
 }

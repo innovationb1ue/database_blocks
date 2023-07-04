@@ -4,34 +4,39 @@
 
 #ifndef DATABASE_BLOCKS_WAL_H
 #define DATABASE_BLOCKS_WAL_H
+
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <filesystem>
-namespace database_blocks {
+#include <map>
 
-    namespace fs = std::filesystem;
+namespace database_blocks {
 
     /*
      * WAL should be appended only file and each time we do an update on memory we write into WAL first.
-     * 1. WAL should get persisted every time we write into it.
-     * 2. It should contain a timestamp, so we can decide which operation decide the final value of the target key.
+     * 1. WAL should get flushed every time we write into it.
+     * 2. No timestamp. Each mem_tree will have exactly one WAL related to it.
      * 3. WAL should be light since we never sort the entries, and we do not random access it.
-     * 4. provide clean method that we can use to remove unnecessary WAL file.
+     * 4. WAL is used as disaster backup when write to mem_tree does not flushed to disk.
+     * 5. provide clean method that we can use to remove unnecessary WAL file (be in wal manager).
      *
      * */
     class wal {
     public:
-        explicit wal(const fs::path &log_file_path);
+        explicit wal(const std::filesystem::path &log_file_path);
 
         ~wal();
 
-        void write_to_wal(const std::string &data);
+        void write_to_wal(const std::string &operation, const std::string &key, const std::string &val);
 
-        static std::string &read_from_wal(const fs::path &log_file_path);
+        // read full WAL
+        std::map<std::string, std::string> read_from_wal();
 
     private:
-        fs::path log_file_path_;
+        // WAL path.
+        std::filesystem::path log_file_path_;
+        // hold wal file handle
         std::fstream log_file_;
     };
 

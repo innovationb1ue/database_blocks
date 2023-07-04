@@ -21,7 +21,6 @@ database_blocks::db::db() {
 void database_blocks::db::put(std::string& key, std::string & val) {
     // generate an uuid and make it operation id.
     // ensure only one tree receive the put request here.
-    spdlog::info("hello");
     for (auto &tree: trees) {
         if (tree.is_immutable()) {
             continue;

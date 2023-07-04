@@ -22,13 +22,21 @@ namespace database_blocks {
 
         explicit mem_tree(database_blocks::configs &&config);
 
+        // default copy
         mem_tree(const mem_tree &other) = default;
 
-        mem_tree(mem_tree &&other) = default;
+        // default move
+        mem_tree(mem_tree &&other) {
+            this->_store = std::move(other._store);
+            this->kv_size_in_bytes = other.kv_size_in_bytes;
+            this->immutable = other.immutable;
+            this->path = std::move(other.path);
+        };
 
         // flush to disk.
         void flush(const std::filesystem::path &);
 
+        // flush to default path
         void flush();
 
         // put a k-v pair into the tree
