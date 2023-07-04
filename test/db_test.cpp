@@ -40,4 +40,5 @@ TEST_F(DbTests, WALTEST) {
         std::cout << "key = " << it->first << " " << "val = " << it->second << std::endl;
         it++;
     }
+    ASSERT_EQ(m.find("123")->second, "123456");
 }
