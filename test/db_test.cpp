@@ -37,7 +37,7 @@ TEST_F(DbTests, WALTEST) {
     auto m = mgr.read_from_wal();
     auto it = m.begin();
     while (it != m.end()) {
-        std::cout << "key = " << it->first << "val = " << it->second << std::endl;
+        std::cout << "key = " << it->first << " " << "val = " << it->second << std::endl;
         it++;
     }
 }
