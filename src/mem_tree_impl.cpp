@@ -4,16 +4,20 @@
 #include <fstream>
 #include "config.h"
 #include "cstring"
+#include "iostream"
 
 
 namespace database_blocks {
-    database_blocks::mem_tree::mem_tree(configs &config) : config(config), tree_wal(to_string(this->id)) {
+    database_blocks::mem_tree::mem_tree(configs &config) : id(uuid_util::random_uuid()), config(config),
+                                                           tree_wal(to_string(this->id) + ".txt") {
         this->_store = std::map<std::string, std::string>();
         this->immutable = false;
         this->path = config.db_store_path / "db.txt";
+        this->tree_wal = wal(to_string(this->id));
     }
 
-    database_blocks::mem_tree::mem_tree(configs &&config) : tree_wal(to_string(this->id)) {
+    database_blocks::mem_tree::mem_tree(configs &&config) : id(uuid_util::random_uuid()),
+                                                            tree_wal(to_string(this->id) + ".txt") {
         this->_store = std::map<std::string, std::string>();
         this->immutable = false;
         this->path = config.db_store_path / "db.txt";

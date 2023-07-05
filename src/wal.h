@@ -26,12 +26,22 @@ namespace database_blocks {
     public:
         explicit wal(const std::filesystem::path &log_file_path);
 
+        wal() = delete;
+
         ~wal();
 
         wal(const wal &other) {
             this->log_file_path_ = other.log_file_path_;
             this->log_file_ = std::fstream(this->log_file_path_, std::ios::in | std::ios::app | std::ios::binary);
         }
+
+        wal &operator=(const wal &other) {
+            log_file_path_ = other.log_file_path_;
+            this->log_file_ = std::fstream(this->log_file_path_, std::ios::in | std::ios::app | std::ios::binary);
+            return *this;
+        }
+
+
 //
 //        wal(const wal &&other) {
 //            this->log_file_path_ = other.log_file_path_;
