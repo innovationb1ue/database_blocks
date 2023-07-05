@@ -4,6 +4,8 @@
 #include <map>
 
 #include "config.h"
+#include "wal.h"
+#include "uuid.h"
 #include <mutex>
 #include <vector>
 #include <optional>
@@ -26,7 +28,7 @@ namespace database_blocks {
         mem_tree(const mem_tree &other) = default;
 
         // default move
-        mem_tree(mem_tree &&other) {
+        mem_tree(mem_tree &&other) noexcept: tree_wal(other.tree_wal.log_file_path_) {
             this->_store = std::move(other._store);
             this->kv_size_in_bytes = other.kv_size_in_bytes;
             this->immutable = other.immutable;
@@ -90,6 +92,10 @@ namespace database_blocks {
         bool immutable;
         // path for record file.
         std::string path;
+        // WAL
+        wal tree_wal;
+        // tree ID
+        uuids::uuid id;
     };
 }
 

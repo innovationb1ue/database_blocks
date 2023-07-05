@@ -7,13 +7,13 @@
 
 
 namespace database_blocks {
-    database_blocks::mem_tree::mem_tree(configs &config) : config(config) {
+    database_blocks::mem_tree::mem_tree(configs &config) : config(config), tree_wal(to_string(this->id)) {
         this->_store = std::map<std::string, std::string>();
         this->immutable = false;
         this->path = config.db_store_path / "db.txt";
     }
 
-    database_blocks::mem_tree::mem_tree(configs &&config) {
+    database_blocks::mem_tree::mem_tree(configs &&config) : tree_wal(to_string(this->id)) {
         this->_store = std::map<std::string, std::string>();
         this->immutable = false;
         this->path = config.db_store_path / "db.txt";

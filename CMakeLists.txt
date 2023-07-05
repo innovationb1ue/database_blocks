@@ -3,11 +3,16 @@ set(CMAKE_CXX_STANDARD 20)
 
 project(database_blocks)
 
+include_directories(libs)
+
+include_directories(util)
+
 add_subdirectory(libs)
 
 add_subdirectory(src)
 
-include_directories(database_blocks libs)
+add_subdirectory(util)
+
 #target_link_libraries(database_blocks lib_uuid)
 
 

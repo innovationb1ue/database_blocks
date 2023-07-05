@@ -28,14 +28,24 @@ namespace database_blocks {
 
         ~wal();
 
+        wal(const wal &other) {
+            this->log_file_path_ = other.log_file_path_;
+            this->log_file_ = std::fstream(this->log_file_path_, std::ios::in | std::ios::app | std::ios::binary);
+        }
+//
+//        wal(const wal &&other) {
+//            this->log_file_path_ = other.log_file_path_;
+//            this->log_file_ = std::fstream(this->log_file_path_, std::ios::in | std::ios::app | std::ios::binary);
+//        }
+
         void write_to_wal(const std::string &operation, const std::string &key, const std::string &val);
 
         // read full WAL
         std::map<std::string, std::string> read_from_wal();
 
-    private:
         // WAL path.
         std::filesystem::path log_file_path_;
+    private:
         // hold wal file handle
         std::fstream log_file_;
     };

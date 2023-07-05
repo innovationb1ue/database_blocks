@@ -42,3 +42,4 @@ TEST_F(DbTests, WALTEST) {
     }
     ASSERT_EQ(m.find("123")->second, "123456");
 }
+

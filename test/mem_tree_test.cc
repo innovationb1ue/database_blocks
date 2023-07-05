@@ -188,7 +188,6 @@ TEST_F(BasicTest, TestSerialize) {
     key1.resize(k1.size());
     memcpy(key1.data(), p, k1.size());
     ASSERT_EQ(k1, key1);
-    p += v1.size();
 }
 
 TEST_F(BasicTest, TestDeserialize) {
@@ -226,5 +225,38 @@ TEST_F(LoadTest, LoadFromFile) {
     EXPECT_EQ(tree.get(k3), v3);
 
     // Clean up the file
-//    std::filesystem::remove(filePath);
+    std::filesystem::remove(filePath);
 }
+
+// Test case for load function with different keys
+TEST_F(LoadTest, LoadFromFile_DifferentKeys) {
+    // Insert additional key-value pairs
+    std::string k4 = "987654";
+    std::string v4 = "abcd";
+    std::string k5 = "xyz";
+    std::string v5 = "123";
+
+    tree.put(k4, v4);
+    tree.put(k5, v5);
+
+    // Flush the tree to a file
+    std::filesystem::path filePath = "test.db";
+    tree.flush(filePath);
+
+    // Clear the existing data in the tree
+    tree.clear();
+
+    // Load the data from the file
+    tree.load(filePath);
+
+    // Verify the loaded data
+    EXPECT_EQ(tree.get(k1), v1);
+    EXPECT_EQ(tree.get(k2), v2);
+    EXPECT_EQ(tree.get(k3), v3);
+    EXPECT_EQ(tree.get(k4), v4);
+    EXPECT_EQ(tree.get(k5), v5);
+
+    // Clean up the file
+    std::filesystem::remove(filePath);
+}
+
