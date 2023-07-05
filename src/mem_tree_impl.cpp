@@ -100,6 +100,9 @@ namespace database_blocks {
         if (immutable) {
             return false;
         }
+        // write to WAL
+        this->tree_wal.write_to_wal("PUT", std::forward<T>(key), std::forward<T>(val));
+
         auto pre_element = _store.find(key);
         // add new key and val kv_size_in_bytes.
         kv_size_in_bytes += (key.size() + val.size());
