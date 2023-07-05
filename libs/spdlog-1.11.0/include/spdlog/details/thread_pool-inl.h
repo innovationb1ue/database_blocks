@@ -54,8 +54,8 @@ namespace spdlog {
             SPDLOG_CATCH_STD
         }
 
-        void SPDLOG_INLINEthread_pool::post_log(async_logger_ptr &&worker_ptr, const details::log_msg &msg,
-                                                async_overflow_policy overflow_policy) {
+        void SPDLOG_INLINE thread_pool::post_log(async_logger_ptr &&worker_ptr, const details::log_msg &msg,
+                                                 async_overflow_policy overflow_policy) {
             async_msg async_m(std::move(worker_ptr), async_msg_type::log, msg);
             post_async_msg_(std::move(async_m), overflow_policy);
         }
