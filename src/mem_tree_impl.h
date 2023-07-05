@@ -6,6 +6,7 @@
 #include "config.h"
 #include "wal.h"
 #include "uuid.h"
+#include "uuid_util.h"
 #include <mutex>
 #include <vector>
 #include <optional>
@@ -95,7 +96,7 @@ namespace database_blocks {
         // WAL
         wal tree_wal;
         // tree ID
-        uuids::uuid id;
+        uuids::uuid id = uuid_util::random_uuid();
     };
 }
 
