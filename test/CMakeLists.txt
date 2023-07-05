@@ -14,7 +14,7 @@ add_executable(
         hello_test
         mem_tree_test.cc
         db_test.cpp
-)
+        wal_test.cpp)
 
 # link for libs
 target_link_libraries(
