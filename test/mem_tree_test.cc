@@ -199,3 +199,32 @@ TEST_F(BasicTest, TestDeserialize) {
     ASSERT_TRUE(res.has_value());
     ASSERT_EQ(res, v1);
 }
+
+// Define a fixture for testing
+class LoadTest : public BasicTest {
+protected:
+    void SetUp() override {
+        BasicTest::SetUp();
+    }
+};
+
+// Test case for load function
+TEST_F(LoadTest, LoadFromFile) {
+    // Flush the tree to a file
+    std::filesystem::path filePath = "test.db";
+    tree.flush(filePath);
+
+    // Clear the existing data in the tree
+    tree.clear();
+
+    // Load the data from the file
+    tree.load(filePath);
+
+    // Verify the loaded data
+    EXPECT_EQ(tree.get(k1), v1);
+    EXPECT_EQ(tree.get(k2), v2);
+    EXPECT_EQ(tree.get(k3), v3);
+
+    // Clean up the file
+//    std::filesystem::remove(filePath);
+}

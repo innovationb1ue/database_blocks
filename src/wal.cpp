@@ -50,9 +50,9 @@ namespace database_blocks {
 
     void wal::write_to_wal(const std::string &operation, const std::string &key, const std::string &val) {
         // Calculate the sizes of the strings
-        size_t operationSize = static_cast<size_t>(operation.size());
-        size_t keySize = static_cast<size_t>(key.size());
-        size_t valSize = static_cast<size_t>(val.size());
+        auto operationSize = static_cast<size_t>(operation.size());
+        auto keySize = static_cast<size_t>(key.size());
+        auto valSize = static_cast<size_t>(val.size());
 
         // Write the sizes to the log file
         log_file_.write(reinterpret_cast<const char *>(&operationSize), sizeof(size_t));

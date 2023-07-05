@@ -172,30 +172,42 @@ namespace database_blocks {
         this->_store.clear();
     }
 
-    void mem_tree::load(const std::filesystem::path &src) {
-        if (!std::filesystem::exists(path)) {
-            return;
-        }
-        std::ifstream src_file;
-        src_file.open(src, std::ios::binary);
-        src_file.seekg(0, std::ios::beg);
+    void database_blocks::mem_tree::load(const std::filesystem::path &src) {
+        clear(); // Clear the existing data before loading
 
-        std::string buf;
-        buf.resize(1024);
-        // read data into buffer and deserialize them.
-        while (!src_file.eof()) {
-            size_t key_size;
-            src_file.read(reinterpret_cast<char *>(&key_size), sizeof(key_size));
-            size_t value_size;
-            src_file.read(reinterpret_cast<char *>(&value_size), sizeof(value_size));
-            std::string key, val;
-            key.resize(key_size);
-            src_file.read(key.data(), key_size);
-            val.resize(value_size);
-            src_file.read(val.data(), value_size);
-            this->_store.emplace(std::move(key), std::move(val));
+        std::ifstream file;
+        file.open(src, std::ios::binary);
+        if (!file.is_open()) {
+            throw std::runtime_error("Failed to open file for loading: " + src.string());
         }
 
+        while (!file.eof()) {
+            // Read the key size
+            std::size_t key_size;
+            file.read(reinterpret_cast<char *>(&key_size), sizeof(key_size));
+
+            // Read the value size
+            std::size_t val_size;
+            file.read(reinterpret_cast<char *>(&val_size), sizeof(val_size));
+
+            if (file.eof()) {
+                break;
+            }
+
+            // Read the key
+            std::string key(key_size, '\0');
+            file.read(&key[0], key_size);
+
+            // Read the value
+            std::string value(val_size, '\0');
+            file.read(&value[0], val_size);
+
+            // Insert the key-value pair into the mem_tree
+            _store[key] = value;
+        }
+
+        file.close();
     }
+
 
 }
