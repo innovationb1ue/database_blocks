@@ -46,6 +46,7 @@ namespace database_blocks {
             this->log_file_ = std::fstream(this->log_file_path_, std::ios::in | std::ios::app | std::ios::binary);
         }
 
+        // write a single operation to WAL file.
         void write_to_wal(const std::string &operation, const std::string &key, const std::string &val);
 
         // remove the wal file if exists.
