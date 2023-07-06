@@ -14,6 +14,7 @@ protected:
     }
 
     void TearDown() override {
+        db_wal.remove();
     }
 
     database_blocks::wal db_wal = database_blocks::wal("wal_test.txt");

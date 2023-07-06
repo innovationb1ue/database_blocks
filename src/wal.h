@@ -41,16 +41,17 @@ namespace database_blocks {
             return *this;
         }
 
-
-//
-//        wal(const wal &&other) {
-//            this->log_file_path_ = other.log_file_path_;
-//            this->log_file_ = std::fstream(this->log_file_path_, std::ios::in | std::ios::app | std::ios::binary);
-//        }
+        wal(const wal &&other) noexcept {
+            this->log_file_path_ = other.log_file_path_;
+            this->log_file_ = std::fstream(this->log_file_path_, std::ios::in | std::ios::app | std::ios::binary);
+        }
 
         void write_to_wal(const std::string &operation, const std::string &key, const std::string &val);
 
-        // read full WAL
+        // remove the wal file if exists.
+        void remove() const;
+
+        // read full WAL and return a map which could potentially replace the tree_map.
         std::map<std::string, std::string> read_from_wal();
 
         // WAL path.

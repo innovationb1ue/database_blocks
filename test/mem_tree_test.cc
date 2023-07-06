@@ -11,7 +11,6 @@
 class BasicTest : public ::testing::Test {
 protected:
     void SetUp() override {
-        auto default_config = database_blocks::configs::default_config();
         k1 = "123";
         v1 = "456789";
         k2 = "456789";
@@ -23,8 +22,12 @@ protected:
         tree.put(k3, v3);
     }
 
+    void TearDown() override {
+        tree.clear_wal();
+    }
+
     std::string k1, v1, k2, v2, k3, v3;
-    database_blocks::mem_tree tree{database_blocks::configs::default_config()};
+    database_blocks::mem_tree tree;
 };
 
 
@@ -41,15 +44,15 @@ TEST_F(BasicTest, BasicAssertions) {
     }
     tree.flush(config.db_store_path / "db.txt");
     ASSERT_EQ(tree.is_immutable(), true);
+    std::remove((config.db_store_path / "db.txt").c_str());
 }
 
 TEST_F(BasicTest, DeleteElementAssertion) {
-    auto db = database_blocks::mem_tree();
     std::string k = "123456";
     std::string v = "456";
-    db.put(k, v);
-    db.remove(k);
-    ASSERT_EQ(db.get(k).has_value(), false);
+    tree.put(k, v);
+    tree.remove(k);
+    ASSERT_EQ(tree.get(k).has_value(), false);
 }
 
 
@@ -72,6 +75,8 @@ TEST_F(BasicTest, LoadAssertion) {
 
     std::string k3 = "8";
     ASSERT_EQ(tree.get(k3), "8");
+    tree2.clear_wal();
+    std::remove((tree.config.db_store_path / "db.txt").c_str());
 }
 
 TEST_F(BasicTest, LoadAssertion2) {
@@ -91,6 +96,8 @@ TEST_F(BasicTest, LoadAssertion2) {
     tree2.load();
     ASSERT_EQ(tree2.get(k1), "456789");
     ASSERT_EQ(tree2.get(k2), "454444");
+    tree2.clear_wal();
+
 }
 
 TEST_F(BasicTest, Int64Assertion) {
@@ -119,8 +126,7 @@ TEST_F(BasicTest, Int64Assertion) {
     }
 }
 
-TEST(BasicLoadTest, WriteIntAsValAssertion) {
-    auto tree = database_blocks::mem_tree();
+TEST_F(BasicTest, WriteIntAsValAssertion) {
     int k = 0;
     auto k1 = std::to_string(k);
     auto v = 64;
@@ -138,9 +144,7 @@ TEST(BasicLoadTest, WriteIntAsValAssertion) {
 }
 
 
-TEST(BasicLoadTest, CompareBytes) {
-    auto db = database_blocks::mem_tree();
-
+TEST_F(BasicTest, CompareBytes) {
     std::string k1;
     k1.resize(4);
     int k = 123;
@@ -155,9 +159,9 @@ TEST(BasicLoadTest, CompareBytes) {
     std::string v2;
     v2.resize(sizeof v2_i * 2);
     memcpy(v2.data(), reinterpret_cast<const char *>(&v2_i), sizeof v2_i);
-    db.put(k1, v1);
-    db.put(k1, v2);
-    auto res = db.get(k1);
+    tree.put(k1, v1);
+    tree.put(k1, v2);
+    auto res = tree.get(k1);
     auto ptr = reinterpret_cast<int *>(res->data());
     ASSERT_EQ(v2_i, *ptr);
 
@@ -195,16 +199,13 @@ TEST_F(BasicTest, TestDeserialize) {
     auto tree2 = database_blocks::mem_tree();
     tree2.deserialize(buf, buf.size());
     auto res = tree2.get(k1);
+    tree2.clear_wal();
     ASSERT_TRUE(res.has_value());
     ASSERT_EQ(res, v1);
 }
 
 // Define a fixture for testing
 class LoadTest : public BasicTest {
-protected:
-    void SetUp() override {
-        BasicTest::SetUp();
-    }
 };
 
 // Test case for load function

@@ -47,7 +47,11 @@ namespace database_blocks {
         requires std::is_same<T &, std::string &>::value
         bool put(T &&key, T &&val);
 
+        // clear tree
         void clear();
+
+        // clear wal
+        void clear_wal();
 
         bool remove(std::string &key);
 
@@ -85,6 +89,8 @@ namespace database_blocks {
         configs config;
 
     private:
+        // tree ID. this has to be on top of tree_wal initialization.
+        uuids::uuid id = uuid_util::random_uuid();
         // storage
         store_type _store;
         // storage kv_size_in_bytes in bytes with key and value kv_size_in_bytes added together.
@@ -95,8 +101,6 @@ namespace database_blocks {
         std::string path;
         // WAL
         wal tree_wal;
-        // tree ID
-        uuids::uuid id = uuid_util::random_uuid();
     };
 }
 

@@ -4,7 +4,6 @@
 #include <fstream>
 #include "config.h"
 #include "cstring"
-#include "iostream"
 
 
 namespace database_blocks {
@@ -13,7 +12,6 @@ namespace database_blocks {
         this->_store = std::map<std::string, std::string>();
         this->immutable = false;
         this->path = config.db_store_path / "db.txt";
-        this->tree_wal = wal(to_string(this->id));
     }
 
     database_blocks::mem_tree::mem_tree(configs &&config) : id(uuid_util::random_uuid()),
@@ -177,6 +175,10 @@ namespace database_blocks {
 
     void mem_tree::clear() {
         this->_store.clear();
+    }
+
+    void mem_tree::clear_wal() {
+        this->tree_wal.remove();
     }
 
     void database_blocks::mem_tree::load(const std::filesystem::path &src) {

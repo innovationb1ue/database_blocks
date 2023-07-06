@@ -5,7 +5,6 @@
 #include <gtest/gtest.h>
 #include "src/db.h"
 #include "src/config.h"
-#include "src/mem_tree_impl.h"
 #include "src/wal.h"
 
 class DbTests : public ::testing::Test {
@@ -23,6 +22,12 @@ protected:
         db->put(k3, v3);
     }
 
+    void TearDown() override {
+        for (auto &t: db->trees) {
+            t.clear_wal();
+        }
+    }
+
     std::string k1, v1, k2, v2, k3, v3;
     std::shared_ptr<database_blocks::db> db;
 };
@@ -32,14 +37,15 @@ TEST_F(DbTests, EmptyBuildTest) {
 }
 
 TEST_F(DbTests, WALTEST) {
-    auto mgr = database_blocks::wal("./db1.txt");
-    mgr.write_to_wal("PUT", "123", "123456");
-    auto m = mgr.read_from_wal();
+    auto test_wal = database_blocks::wal("./test_wal.txt");
+    test_wal.write_to_wal("PUT", "123", "123456");
+    auto m = test_wal.read_from_wal();
     auto it = m.begin();
     while (it != m.end()) {
         std::cout << "key = " << it->first << " " << "val = " << it->second << std::endl;
         it++;
     }
     ASSERT_EQ(m.find("123")->second, "123456");
+    test_wal.remove();
 }
 

@@ -67,4 +67,8 @@ namespace database_blocks {
         // Flush immediately
         log_file_.flush();
     }
+
+    void database_blocks::wal::remove() const {
+        std::remove(log_file_path_.c_str());
+    }
 }
