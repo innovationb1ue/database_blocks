@@ -79,6 +79,7 @@ namespace database_blocks {
             set_immutable();
         }
         std::ofstream file;
+        // will truncate the file if it exists.
         file.open(dst, std::ios::binary | std::ios::trunc);
         for (auto &it: _store) {
             auto key_size = it.first.size();

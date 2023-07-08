@@ -12,13 +12,13 @@
 #include "spdlog/spdlog.h"
 
 database_blocks::db::db(database_blocks::configs config): config(std::move(config)) {
-    trees.emplace_back(configs::default_config());
+    trees.emplace_back();
 }
 
 database_blocks::db::db() {
     this->trees = std::vector<mem_tree>();
     // todo: make this initialize process
-    trees.emplace_back(configs::default_config());
+    trees.emplace_back();
 }
 
 void database_blocks::db::put(std::string& key, std::string & val) {
