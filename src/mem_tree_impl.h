@@ -96,7 +96,7 @@ namespace database_blocks {
         // storage kv_size_in_bytes in bytes with key and value kv_size_in_bytes added together.
         size_t kv_size_in_bytes = 0;
         // maximum storage kv_size_in_bytes in byte.
-        bool immutable;
+        bool immutable = false;
         // path for record file.
         std::string path;
         // WAL

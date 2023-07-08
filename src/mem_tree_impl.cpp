@@ -7,20 +7,15 @@
 
 
 namespace database_blocks {
-    database_blocks::mem_tree::mem_tree(configs &config) : id(uuid_util::random_uuid()), config(config),
-                                                           tree_wal(to_string(this->id) + ".txt") {
-        this->_store = std::map<std::string, std::string>();
-        this->immutable = false;
-        this->path = config.db_store_path / "db.txt";
-    }
+    database_blocks::mem_tree::mem_tree(configs &config) :
+            id(uuid_util::random_uuid()), config(config),
+            tree_wal(to_string(this->id) + ".txt"),
+            immutable(false), path(config.db_store_path / "db.txt") {}
 
-    database_blocks::mem_tree::mem_tree(configs &&config) : id(uuid_util::random_uuid()),
-                                                            tree_wal(to_string(this->id) + ".txt") {
-        this->_store = std::map<std::string, std::string>();
-        this->immutable = false;
-        this->path = config.db_store_path / "db.txt";
-        this->config = config;
-    }
+    database_blocks::mem_tree::mem_tree(configs &&config) :
+            id(uuid_util::random_uuid()), config(config),
+            tree_wal(to_string(this->id) + ".txt"),
+            immutable(false), path(config.db_store_path / "db.txt") {}
 
     std::string database_blocks::mem_tree::serialize() {
         std::string buf;

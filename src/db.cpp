@@ -18,7 +18,7 @@ database_blocks::db::db(database_blocks::configs config): config(std::move(confi
 database_blocks::db::db() {
     this->trees = std::vector<mem_tree>();
     // todo: make this initialize process
-    trees.emplace_back();
+    trees.emplace_back(this->config);
 }
 
 void database_blocks::db::put(std::string& key, std::string & val) {
