@@ -12,9 +12,6 @@
 
 namespace database_blocks {
     struct configs {
-        configs(int64_t i, std::filesystem::path p) :
-                mem_tree_size(i), db_store_path(std::move(p)) {};
-
         configs() = default;
 
         static configs default_config() {
@@ -25,13 +22,17 @@ namespace database_blocks {
 
         configs(configs const &other) = default;
 
-        configs& operator= (configs const& other)= default;
+        configs &operator=(configs const &other) = default;
 
+        // make all configs public so user can easily modify them.
+        // configs should be simple and easy to manipulate.
     public:
         // mem tree kv_size_in_bytes in memory.
         int64_t mem_tree_size = 4096;
         // path to store db files. this should point to a directory where we can freely use.
         std::filesystem::path db_store_path = std::filesystem::current_path();
+
+        int64_t mem_tree_num = 2;
     };
 
 }

@@ -11,8 +11,10 @@
 #include <vector>
 #include "spdlog/spdlog.h"
 
-database_blocks::db::db(database_blocks::configs config): config(std::move(config)) {
-    trees.emplace_back();
+database_blocks::db::db(database_blocks::configs config) : config(config) {
+    for (int i = 0; i < config.mem_tree_num; i++) {
+        trees.emplace_back(config);
+    }
 }
 
 database_blocks::db::db() {
