@@ -7,10 +7,7 @@
 
 
 namespace database_blocks {
-    database_blocks::mem_tree::mem_tree(configs &config) :
-            id(uuid_util::random_uuid()), config(config),
-            tree_wal(to_string(this->id) + ".txt"),
-            immutable(false), path(config.db_store_path / "db.txt") {}
+    database_blocks::mem_tree::mem_tree(configs &config) : mem_tree(std::move(config)) {}
 
     database_blocks::mem_tree::mem_tree(configs &&config) :
             id(uuid_util::random_uuid()), config(config),
