@@ -4,6 +4,7 @@
 
 #include "db.h"
 #include "mem_tree_impl.h"
+//#include "mem_tree_impl.cpp"
 
 #include <utility>
 
@@ -21,18 +22,4 @@ database_blocks::db::db() {
     this->trees = std::vector<mem_tree>();
     // todo: make this initialize process
     trees.emplace_back(this->config);
-}
-
-void database_blocks::db::put(std::string& key, std::string & val) {
-    // generate an uuid and make it operation id.
-    // ensure only one tree receive the put request here.
-    for (auto &tree: trees) {
-        if (tree.is_immutable()) {
-            continue;
-        }
-        auto res = tree.put(key, val);
-        if (res) {
-            return;
-        }
-    }
 }

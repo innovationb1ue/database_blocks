@@ -7,9 +7,9 @@
 
 
 namespace database_blocks {
-    database_blocks::mem_tree::mem_tree(configs &config) : mem_tree(std::move(config)) {}
+    mem_tree::mem_tree(configs &config) : mem_tree(std::move(config)) {}
 
-    database_blocks::mem_tree::mem_tree(configs &&config) :
+    mem_tree::mem_tree(configs &&config) :
             id(uuid_util::random_uuid()), config(config),
             tree_wal(to_string(this->id) + ".txt"),
             immutable(false), path(config.db_store_path / "db.txt") {}
@@ -63,10 +63,10 @@ namespace database_blocks {
         return {};
     }
 
-    database_blocks::mem_tree::mem_tree() : mem_tree(configs::default_config()) {}
+    mem_tree::mem_tree() : mem_tree(configs::default_config()) {}
 
     // flush data to target file. truncate file first.
-    void database_blocks::mem_tree::flush(const std::filesystem::path &dst) {
+    void mem_tree::flush(const std::filesystem::path &dst) {
         if (!immutable) {
             set_immutable();
         }
@@ -87,56 +87,21 @@ namespace database_blocks {
     void database_blocks::mem_tree::flush() {
         return flush(path);
     }
-
-    // put arbitrary byte data into the map.
-    template<class T>
-    requires std::is_same<T &, std::string &>::value
-    bool database_blocks::mem_tree::put(T &&key, T &&val) {
-        if (immutable) {
-            return false;
-        }
-        // write to WAL
-        this->tree_wal.write_to_wal("PUT", std::forward<T>(key), std::forward<T>(val));
-
-        auto pre_element = _store.find(key);
-        // add new key and val kv_size_in_bytes.
-        kv_size_in_bytes += (key.size() + val.size());
-        size_t pre_val_size = 0;
-        // has same key element, just replace the value.
-        if (pre_element != _store.end()) {
-            // remove the old value from total kv_size_in_bytes.
-            pre_val_size = pre_element->second.size();
-            kv_size_in_bytes -= pre_val_size;
-            // forwarding the value to
-            pre_element->second = std::forward<T>(val);
-        } else {
-            _store.emplace(std::forward<T>(key), std::forward<T>(val));
-        }
-
-        if (kv_size_in_bytes > config.mem_tree_size) {
-            this->set_immutable();
-        }
-        return pre_element == _store.end();
-    }
-
-    template bool database_blocks::mem_tree::put<std::string &&>(std::string &&, std::string &&);
-
-    template bool database_blocks::mem_tree::put<std::string &>(std::string &, std::string &);
-
-    void database_blocks::mem_tree::set_immutable() {
+    
+    void mem_tree::set_immutable() {
         immutable = true;
     }
 
-    bool database_blocks::mem_tree::is_immutable() const {
+    bool mem_tree::is_immutable() const {
         return immutable;
     }
 
-    bool database_blocks::mem_tree::merge(const database_blocks::mem_tree &&other) {
+    bool mem_tree::merge(const database_blocks::mem_tree &&other) {
         this->_store.merge(std::move(other.get_store()));
         return true;
     }
 
-    bool database_blocks::mem_tree::merge(const std::filesystem::path &file) {
+    bool mem_tree::merge(const std::filesystem::path &file) {
         // merge if the file exist
         if (std::filesystem::exists(file)) {
             auto file_tree = mem_tree();
@@ -147,22 +112,22 @@ namespace database_blocks {
         return false;
     }
 
-    database_blocks::store_type database_blocks::mem_tree::get_store() const {
+    store_type mem_tree::get_store() const {
         return _store;
     }
 
-    bool database_blocks::mem_tree::remove(std::string &key) {
+    bool mem_tree::remove(std::string &key) {
         return this->_store.erase(key);
     }
 
-    std::optional<std::string> database_blocks::mem_tree::get(std::string &key) {
+    std::optional<std::string> mem_tree::get(std::string &key) {
         auto res = this->_store.find(key);
         return res == this->_store.end() ?
                std::nullopt :
                std::optional<std::reference_wrapper<std::string>>{res->second};
     }
 
-    void database_blocks::mem_tree::load() {
+    void mem_tree::load() {
         return load(std::filesystem::current_path() / "db.txt");
     }
 
@@ -174,7 +139,7 @@ namespace database_blocks {
         this->tree_wal.remove();
     }
 
-    void database_blocks::mem_tree::load(const std::filesystem::path &src) {
+    void mem_tree::load(const std::filesystem::path &src) {
         clear(); // Clear the existing data before loading
 
         std::ifstream file;

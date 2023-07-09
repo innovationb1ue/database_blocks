@@ -17,16 +17,19 @@ protected:
         v2 = "454444";
         k3 = "456";
         v3 = "888888";
+        k4 = "567";
+        v4 = "678";
         tree.put(k1, v1);
         tree.put(k2, v2);
         tree.put(k3, v3);
+        tree.put(std::move(k4), std::move(v4));
     }
 
     void TearDown() override {
         tree.clear_wal();
     }
 
-    std::string k1, v1, k2, v2, k3, v3;
+    std::string k1, v1, k2, v2, k3, v3, k4, v4;
     database_blocks::mem_tree tree;
 };
 

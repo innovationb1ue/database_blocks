@@ -12,7 +12,7 @@ enable_testing()
 # test executables
 add_executable(
         hello_test
-        mem_tree_test.cc
+        mem_tree_test.cpp
         db_test.cpp
         wal_test.cpp)
 
@@ -29,6 +29,7 @@ target_include_directories(
         hello_test
         PRIVATE
         ${CMAKE_SOURCE_DIR}
+        src/
 )
 
 

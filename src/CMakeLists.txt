@@ -1,4 +1,4 @@
-SET(database_blocks_source_files mem_tree_impl.cpp mem_tree_impl.h db.h config.h db.cpp wal.h wal.cpp wal_manager.cpp wal_manager.h)
+SET(database_blocks_source_files mem_tree_impl.h mem_tree_impl.cpp db.h config.h db.cpp wal.h wal.cpp wal_manager.cpp wal_manager.h)
 
 include_directories(../libs)
 

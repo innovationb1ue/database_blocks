@@ -44,8 +44,33 @@ namespace database_blocks {
 
         // put a k-v pair into the tree
         template<class T>
-        requires std::is_same<T &, std::string &>::value
-        bool put(T &&key, T &&val);
+        bool put(T &&key, T &&val) {
+            if (immutable) {
+                return false;
+            }
+            // write to WAL
+            this->tree_wal.write_to_wal("PUT", std::forward<T>(key), std::forward<T>(val));
+
+            auto pre_element = _store.find(key);
+            // add new key and val kv_size_in_bytes.
+            kv_size_in_bytes += (key.size() + val.size());
+            size_t pre_val_size = 0;
+            // has same key element, just replace the value.
+            if (pre_element != _store.end()) {
+                // remove the old value from total kv_size_in_bytes.
+                pre_val_size = pre_element->second.size();
+                kv_size_in_bytes -= pre_val_size;
+                // forwarding the value to
+                pre_element->second = std::forward<T>(val);
+            } else {
+                _store.emplace(std::forward<T>(key), std::forward<T>(val));
+            }
+
+            if (kv_size_in_bytes > config.mem_tree_size) {
+                this->set_immutable();
+            }
+            return pre_element == _store.end();
+        }
 
         // clear tree
         void clear();
@@ -62,6 +87,7 @@ namespace database_blocks {
         // deserialize the tree from byte stream;
         // will insert the data decoded into _store.
         std::string deserialize(std::string, size_t size);
+
 
         // merge two mem_tree into one.
         bool merge(const mem_tree &&other);
@@ -103,5 +129,6 @@ namespace database_blocks {
         wal tree_wal;
     };
 }
+
 
 #endif //DATABASE_BLOCKS_MEM_TREE_IMPL_H
