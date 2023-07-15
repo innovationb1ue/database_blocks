@@ -23,9 +23,7 @@ protected:
     }
 
     void TearDown() override {
-        for (auto &t: db->trees) {
-            t.clear_wal();
-        }
+        db->tree.clear_wal();
     }
 
     std::string k1, v1, k2, v2, k3, v3;

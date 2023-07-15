@@ -18,30 +18,36 @@ namespace database_blocks {
 
         ~db() = default;
 
+        // this gets called concurrently.
         template<typename T>
+        requires std::is_same_v<std::string &, T &>
         void put(T &&key, T &&val) {
             // generate an uuid and make it operation id.
             // ensure only one tree receive the put request here.
-            for (auto &tree: trees) {
-                if (tree.is_immutable()) {
-                    continue;
-                }
-                auto res = tree.put(std::forward<T>(key), std::forward<T>(val));
-                if (res) {
-                    return;
-                }
+            if (tree.is_immutable()) {
+
+            }
+            auto res = tree.put(std::forward<T>(key), std::forward<T>(val));
+            if (res) {
+                return;
             }
             // no tree is available ?
             // construct a new one.
             std::scoped_lock<std::mutex> l(tree_lock);
-            auto new_tree = trees.emplace_back();
-            new_tree.put(std::forward<T>(key), std::forward<T>(val));
         }
 
-        void new_memtree();
+        // swap mem tree with the new one.
+        // block until swap succeed.
+        void swap();
+
+        std::string get(std::string key, std::string val) {
+            return {"default val"};
+        }
 
         // current storages.
-        std::vector<database_blocks::mem_tree> trees;
+        mem_tree tree;
+        // trees waiting to be flushed.
+        std::vector<mem_tree> immut_trees;
     private:
         // config struct (config should be light so do not worry copying it around. )
         configs config;
