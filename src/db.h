@@ -23,20 +23,17 @@ namespace database_blocks {
         template<typename T>
         requires std::is_same_v<std::string &, T &>
         void put(T &&key, T &&val) {
-            // generate an uuid and make it operation id.
-            // ensure only one tree receive the put request here.
-            // todo: what if the tree is getting swapped?
-            if (tree->is_immutable()) {
-                auto t1 = std::thread(&db::swap_mem_tree, this);
-                t1.join();
+            // fire and forget the swap task.
+            // Check swap thread
+            if (tree->is_immutable() && !swap_thread.joinable()) {
+                swap_thread = std::thread(&db::swap_mem_tree, this);
+                // todo: how can we solve this competition?
             }
+            // put data
             auto res = tree->put(std::forward<T>(key), std::forward<T>(val));
             if (res) {
                 return;
             }
-            // no tree is available ?
-            // construct a new one.
-            std::scoped_lock<std::mutex> l(tree_lock);
         }
 
         // swap_mem_tree mem tree with the new one.
@@ -50,12 +47,13 @@ namespace database_blocks {
         // current storages.
         std::shared_ptr<mem_tree> tree;
         // trees waiting to be flushed.
-        std::vector<mem_tree> immutable_trees;
+        std::vector<std::shared_ptr<mem_tree>> immutable_trees;
     private:
         // config struct (config should be light so do not worry copying it around. )
         configs config;
         // trees lock
         std::mutex tree_lock;
+        std::thread swap_thread;
     };
 }
 
