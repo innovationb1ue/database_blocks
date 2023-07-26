@@ -26,11 +26,11 @@ namespace database_blocks {
             // generate an uuid and make it operation id.
             // ensure only one tree receive the put request here.
             // todo: what if the tree is getting swapped?
-            if (tree.is_immutable()) {
+            if (tree->is_immutable()) {
                 auto t1 = std::thread(&db::swap_mem_tree, this);
                 t1.join();
             }
-            auto res = tree.put(std::forward<T>(key), std::forward<T>(val));
+            auto res = tree->put(std::forward<T>(key), std::forward<T>(val));
             if (res) {
                 return;
             }
@@ -48,14 +48,12 @@ namespace database_blocks {
         }
 
         // current storages.
-        mem_tree tree;
+        std::shared_ptr<mem_tree> tree;
         // trees waiting to be flushed.
-        std::vector<mem_tree> immut_trees;
+        std::vector<mem_tree> immutable_trees;
     private:
         // config struct (config should be light so do not worry copying it around. )
         configs config;
-        // immutable trees that are ready to get flushed to file.
-        std::vector<mem_tree> immutable_trees;
         // trees lock
         std::mutex tree_lock;
     };

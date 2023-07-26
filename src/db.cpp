@@ -13,11 +13,14 @@
 #include "spdlog/spdlog.h"
 
 database_blocks::db::db(database_blocks::configs config) : config(std::move(config)) {
+    tree = std::make_shared<mem_tree>(config);
 }
 
-database_blocks::db::db() = default;
+database_blocks::db::db() {
+    tree = std::make_shared<mem_tree>(config);
+};
 
 void database_blocks::db::swap_mem_tree() {
     std::scoped_lock l(tree_lock);
-    this->tree;
+//    this->tree = std::make_shared<mem_tree>();
 }
