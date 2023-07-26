@@ -22,5 +22,6 @@ database_blocks::db::db() {
 
 void database_blocks::db::swap_mem_tree() {
     std::scoped_lock l(tree_lock);
-//    this->tree = std::make_shared<mem_tree>();
+    // place a new mem tree
+    this->tree = std::make_shared<mem_tree>();
 }
