@@ -8,6 +8,7 @@
 #include "config.h"
 #include "mem_tree_impl.h"
 #include <vector>
+#include <thread>
 
 namespace database_blocks {
     class db {
@@ -24,8 +25,10 @@ namespace database_blocks {
         void put(T &&key, T &&val) {
             // generate an uuid and make it operation id.
             // ensure only one tree receive the put request here.
+            // todo: what if the tree is getting swapped?
             if (tree.is_immutable()) {
-
+                auto t1 = std::thread(&db::swap_mem_tree, this);
+                t1.join();
             }
             auto res = tree.put(std::forward<T>(key), std::forward<T>(val));
             if (res) {
@@ -36,11 +39,11 @@ namespace database_blocks {
             std::scoped_lock<std::mutex> l(tree_lock);
         }
 
-        // swap mem tree with the new one.
-        // block until swap succeed.
-        void swap();
+        // swap_mem_tree mem tree with the new one.
+        // block until swap_mem_tree succeed.
+        void swap_mem_tree();
 
-        std::string get(std::string key, std::string val) {
+        std::string get(const std::string &key) {
             return {"default val"};
         }
 

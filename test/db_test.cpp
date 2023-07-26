@@ -47,3 +47,7 @@ TEST_F(DbTests, WALTEST) {
     test_wal.remove();
 }
 
+TEST_F(DbTests, DbSwapTest) {
+    db->swap_mem_tree();
+}
+

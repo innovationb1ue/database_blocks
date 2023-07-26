@@ -16,3 +16,8 @@ database_blocks::db::db(database_blocks::configs config) : config(std::move(conf
 }
 
 database_blocks::db::db() = default;
+
+void database_blocks::db::swap_mem_tree() {
+    std::scoped_lock l(tree_lock);
+    this->tree;
+}
