@@ -27,7 +27,8 @@ namespace database_blocks {
             // Check swap thread
             if (tree->is_immutable() && !swap_thread.joinable()) {
                 swap_thread = std::thread(&db::swap_mem_tree, this);
-                // todo: how can we solve this competition?
+                swap_thread.join();
+                //todo: optimize this to run concurrently.
             }
             // put data
             auto res = tree->put(std::forward<T>(key), std::forward<T>(val));
