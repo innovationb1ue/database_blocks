@@ -51,3 +51,32 @@ TEST_F(DbTests, DbSwapTest) {
     db->swap_mem_tree();
 }
 
+TEST_F(DbTests, PutAndSwapTest) {
+    // Perform massive put operations
+
+    const int numPutOperations = 1000; // You can adjust this number as needed
+    for (int i = 0; i < numPutOperations; ++i) {
+        std::string key = "key_" + std::to_string(i);
+        std::string value = "value_" + std::to_string(i);
+        db->put(key, value);
+    }
+    // 999 remain in the database
+    ASSERT_EQ(db->get("key_999"), "value_999");
+    // key_1 should be in immutable trees and possibly get flushed into disk.
+    ASSERT_EQ(db->get("key_1"), "value_1");
+    // Swap the mem_tree
+    db->swap_mem_tree();
+
+    // Verify that the new mem_tree is now mutable one
+    ASSERT_FALSE(db->tree->is_immutable());
+
+    // Check that the newly created mem_tree is empty (assuming "default val" means empty)
+    ASSERT_EQ(db->get("some_random_key"), std::nullopt);
+}
+
+
+
+
+
+
+

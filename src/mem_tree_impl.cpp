@@ -120,7 +120,7 @@ namespace database_blocks {
         return this->_store.erase(key);
     }
 
-    std::optional<std::string> mem_tree::get(std::string &key) {
+    std::optional<std::string> mem_tree::get(const std::string &key) {
         auto res = this->_store.find(key);
         return res == this->_store.end() ?
                std::nullopt :

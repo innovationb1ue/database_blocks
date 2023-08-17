@@ -7,8 +7,10 @@
 
 #include "config.h"
 #include "mem_tree_impl.h"
+#include <ranges>
 #include <vector>
 #include <thread>
+#include "unordered_set"
 
 namespace database_blocks {
     class db {
@@ -41,8 +43,71 @@ namespace database_blocks {
         // block until swap_mem_tree succeed.
         void swap_mem_tree();
 
-        std::string get(const std::string &key) {
-            return {"default val"};
+        std::optional<std::string> get(const std::string &key) {
+            // Search in the current tree first
+            auto currentTreeValue = tree->get(key);
+            if (currentTreeValue.has_value()) {
+                return currentTreeValue.value();
+            }
+
+            // If not found in the current tree, search in the immutable trees
+            for (auto &immutable_tree: std::ranges::reverse_view(immutable_trees)) {
+                auto immutableTreeValue = immutable_tree->get(key);
+                if (immutableTreeValue.has_value()) {
+                    return immutableTreeValue.value();
+                }
+            }
+
+            // If the key is not found in both the current tree and immutable trees, try loading from a specific path
+            std::string loadedValue;
+
+            auto path = config.db_store_path;
+
+            if (!path.empty() && std::filesystem::is_directory(path)) {
+                // Use an unordered_set as a simple Bloom filter
+                std::unordered_set < std::string > bloomFilter;
+                bloomFilter.insert(key);
+
+                for (const auto &entry: std::filesystem::directory_iterator(path)) {
+                    if (!entry.is_regular_file()) {
+                        continue;
+                    }
+
+                    std::string filePath = entry.path().string();
+                    std::string fileName = entry.path().filename().string();
+
+                    // Check if the file name matches the bloom filter
+                    if (bloomFilter.find(fileName) == bloomFilter.end()) {
+                        continue;
+                    }
+
+                    // Load the data from the file and create a new mem_tree instance
+                    std::ifstream file(filePath);
+                    if (file) {
+                        std::stringstream buffer;
+                        buffer << file.rdbuf();
+                        std::string fileData = buffer.str();
+
+                        mem_tree loadedTree;
+                        loadedTree.deserialize(fileData, fileData.size());
+
+                        // Search for the key in the loadedTree
+                        auto loadedTreeValue = loadedTree.get(key);
+                        if (loadedTreeValue.has_value()) {
+                            loadedValue = loadedTreeValue.value();
+                            break; // Found the value, no need to check other files
+                        }
+                    }
+                }
+            }
+
+            // If the value is found in the loaded tree, return it
+            if (!loadedValue.empty()) {
+                return loadedValue;
+            }
+
+            //todo: if not in current and immutable trees. search persistence file.
+            return std::nullopt;
         }
 
         // current storages.

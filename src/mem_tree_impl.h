@@ -102,7 +102,7 @@ namespace database_blocks {
 
         [[nodiscard]] store_type get_store() const;
 
-        std::optional<std::string> get(std::string &key);
+        std::optional<std::string> get(const std::string &key);
 
         // default load. intentionally for tests.
         void load();
